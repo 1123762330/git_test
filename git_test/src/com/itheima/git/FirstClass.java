@@ -5,4 +5,8 @@ public class FirstClass {
         System.out.println("hello git project");
         System.out.println("第二次修改");
     }
+
+    public void test(){
+        System.out.println("测试");
+    }
 }
