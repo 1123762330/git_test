@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "../config/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Repository接口 -->
+<mapper namespace="com.xn.consumer.dao.MessageDao">
+
+    <!--查询方法-->
+    <select id="findMessageList" resultType="com.xn.consumer.domain.PoolWorker">
+        select * from pool_worker
+    </select>
+
+    <!--新增方法-->
+    <insert id="saveMessage" parameterType="map">
+        insert into pool_worker(account_id,username) values (#{user_id},#{user_name})
+    </insert>
+
+</mapper>
