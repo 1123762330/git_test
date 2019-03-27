@@ -21,7 +21,7 @@
     //查找用户名下的矿机信息
     function search(puid) {
         $.ajax({
-            "url": "${pageContext.request.contextPath}/accounts/findWorkerList?puid=" + puid,
+            "url": "${pageContext.request.contextPath}/findWorkerList?puid=" + puid,
             "data": $("#formid").serialize(),
             "type": "GET",
             "dataType": "json",
@@ -52,7 +52,7 @@
                         var workData = worksData[i];
                         //时间换算  Math.round进行四舍五入
                         var accept1Data = getTimeData(workData.accept_1m / 60);
-                        var accept5Data = getTimeData(workData.accept_5m / 300);
+                        var accept5Data =  getTimeData(workData.accept_5m / 300);
                         var accept15Data = getTimeData(workData.accept_15m / 900);
                         var reject15Data = getTimeData(workData.reject_15m / 900);
                         var accept1hData = getTimeData(workData.accept_1h / 3600);
@@ -96,12 +96,12 @@
         function getTimeData(time) {
             if (time < 1024) {
                 return time.toFixed(2) + "B";
-            } else if(time >= 1024) {//KB转换
-                var KB = ( (time * (2^32)) / 1024);
+            } else if (time >= 1024) {//KB转换
+                var KB = ( (time * (2 ^ 32)) / 1024);
                 if (KB >= 1024) {//MB转换
                     var MB = KB / 1024;
                     if (MB >= 1024) {//GB转换
-                        var GB = MB /1024;
+                        var GB = MB / 1024;
                         if (GB >= 1024) {//TB转换
                             var TB = GB / 1024;
                             return TB.toFixed(2) + "TB";
@@ -117,20 +117,26 @@
         //计算百分比
         function getPercent(acceptTimeData, rejectTimeData) {
             if (acceptTimeData > 1024 && rejectTimeData > 1024) {//都大于1024
-                var accept = ( (acceptTimeData * (2^32) ) / 1024);//接受一小时的数据
-                var reject = ( (rejectTimeData * (2^32) ) / 1024);//超时1小时的数据
+                var accept = ( (acceptTimeData * (2 ^ 32) ) / 1024);//接受一小时的数据
+                var reject = ( (rejectTimeData * (2 ^ 32) ) / 1024);//超时1小时的数据
                 return reject / (accept + reject);//计算百分比
             } else if (acceptTimeData < 1024 && rejectTimeData < 1024) {//都小于1024
                 return rejectTimeData / (acceptTimeData + rejectTimeData);
             } else if (0 < acceptTimeData < 1024) {//接受大于1024
-                var accept = ( (acceptTimeData * (2^32) ) / 1024);//接受一小时的数据
+                var accept = ( (acceptTimeData * (2 ^ 32) ) / 1024);//接受一小时的数据
                 return rejectTimeData / (accept + rejectTimeData);//计算百分比
             } else if (0 < rejectTimeData < 1024) {//超时大于1024
-                var reject = ( (rejectTimeData * (2^32) ) / 1024);//超时1小时的数据
+                var reject = ( (rejectTimeData * (2 ^ 32) ) / 1024);//超时1小时的数据
                 return reject / (acceptTimeData + reject);//计算百分比
             }
         }
 
+        function getNum(dataStr) {
+            var num = parseInt(dataStr.replace(/[^0-9]/ig, ""));
+            //截取数字
+            console.log(num)
+            $('#price').val(num);
+        }
     }
 </script>
 </body>

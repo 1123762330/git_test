@@ -1,0 +1,14 @@
+server:
+  port: 8766
+spring:
+  application:
+    name: provider
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://127.0.0.1/bpos?serverTimezone=GMT%2B8
+eureka:
+  client:
+    service-url:
+      defualtZone: http://localhost:8761/eureka/

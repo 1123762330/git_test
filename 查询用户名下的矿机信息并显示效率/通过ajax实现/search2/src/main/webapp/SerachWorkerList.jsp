@@ -21,7 +21,7 @@
     //查找用户名下的矿机信息
     function search(puid) {
         $.ajax({
-            "url": "${pageContext.request.contextPath}/accounts/findWorkerList?puid=" + puid,
+            "url": "${pageContext.request.contextPath}/findWorkerList?puid=" + puid,
             "data": $("#formid").serialize(),
             "type": "GET",
             "dataType": "json",

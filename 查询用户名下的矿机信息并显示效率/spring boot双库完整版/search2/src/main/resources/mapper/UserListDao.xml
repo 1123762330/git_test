@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "../config/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Repository接口 -->
+<mapper namespace="com.xn.search2.dao.UserListDao">
+
+    <select id="findUserList" resultType="com.xn.search2.domain.Accounts" parameterType="String">
+        select * from accounts ;
+    </select>
+
+    <select id="findWorkerList" resultType="com.xn.search2.domain.Works" parameterType="int">
+        SELECT * FROM mining_workers WHERE puid=#{puid};
+    </select>
+
+    <select id="findPool" resultType="com.xn.search2.domain.StatsPoolDay" parameterType="String">
+        select * from stats_pool_day ;
+    </select>
+
+    <select id="findPoolHour" resultType="com.xn.search2.domain.StatsPoolHour" parameterType="String">
+        select * from stats_pool_hour ;
+    </select>
+
+    <select id="findUserDay" resultType="com.xn.search2.domain.StatsUsersDay" parameterType="int">
+        select * from stats_users_day WHERE puid=#{puid} ;
+    </select>
+
+    <select id="findUsersHour" resultType="com.xn.search2.domain.StatsUsersHour" parameterType="int">
+        select * from stats_users_hour WHERE puid=#{puid};
+    </select>
+
+    <select id="findWorkersDay" resultType="com.xn.search2.domain.StatsWorkersDay" parameterType="int">
+        select * from stats_workers_day WHERE puid=#{puid};
+    </select>
+
+    <select id="findWorkersHour" resultType="com.xn.search2.domain.StatsWorkersHour" parameterType="int">
+        select * from stats_workers_hour WHERE puid=#{puid} ;
+    </select>
+
+
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/finduser/finduser.iml" filepath="$PROJECT_DIR$/finduser/finduser.iml" />
+      <module fileurl="file://$PROJECT_DIR$/service-hi/service-hi.iml" filepath="$PROJECT_DIR$/service-hi/service-hi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/service-two/service-two.iml" filepath="$PROJECT_DIR$/service-two/service-two.iml" />
+      <module fileurl="file://$PROJECT_DIR$/service_consumer/service_consumer.iml" filepath="$PROJECT_DIR$/service_consumer/service_consumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud_demo/springcloud_demo.iml" filepath="$PROJECT_DIR$/springcloud_demo/springcloud_demo.iml" />
+    </modules>
+  </component>
+</project>
