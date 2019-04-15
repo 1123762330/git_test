@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "../config/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Repository接口 -->
+<mapper namespace="com.xn.find_xn_user.dao.UserListDao">
+
+
+    <select id="findUserList" resultType="com.xn.find_xn_user.domain.Accounts" parameterType="String">
+        select id,username from accounts where id>=#{last_id} limit 10
+    </select>
+
+    <select id="findUsernameById" resultType="Integer" parameterType="String">
+        select id from accounts where username=#{username}
+    </select>
+
+    <select id="findAllUser" resultType="String">
+        select username from accounts
+    </select>
+
+    <insert id="saveUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.xn.find_xn_user.domain.RegisterResult">
+        insert into accounts (username,pass) values(#{username},#{password});
+    </insert>
+
+
+</mapper>
