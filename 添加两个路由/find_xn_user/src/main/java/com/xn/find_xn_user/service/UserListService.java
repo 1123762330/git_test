@@ -1,8 +1,6 @@
 package com.xn.find_xn_user.service;
 
-import com.xn.find_xn_user.domain.QueryResult;
-import com.xn.find_xn_user.domain.UserIDResult;
-import com.xn.find_xn_user.domain.RegisterResult;
+import com.xn.find_xn_user.domain.*;
 
 import java.util.List;
 
@@ -13,5 +11,7 @@ public interface UserListService {
 
     List findAllUser();
 
-    RegisterResult saveUser(RegisterResult registerResult);
+    List findAllPoolWorker();
+
+    Accounts selectUser(String username);
 }

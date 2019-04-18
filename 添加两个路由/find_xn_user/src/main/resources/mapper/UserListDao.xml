@@ -16,9 +16,22 @@
         select username from accounts
     </select>
 
-    <insert id="saveUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.xn.find_xn_user.domain.RegisterResult">
-        insert into accounts (username,pass) values(#{username},#{password});
+    <select id="findAllPoolWorker" resultType="String">
+        select username from pool_worker;
+    </select>
+
+    <insert id="savePoolWorker">
+        insert into pool_worker (account_id,username) values(#{accountId},#{username});
     </insert>
+
+    <select id="getByAccountId" resultType="Integer" parameterType="String">
+        select id from accounts where username=#{username}
+    </select>
+
+    <select id="selectUser" resultType="com.xn.find_xn_user.domain.Accounts" parameterType="String">
+        select id,username,pass from accounts where username=#{username}
+    </select>
+
 
 
 </mapper>

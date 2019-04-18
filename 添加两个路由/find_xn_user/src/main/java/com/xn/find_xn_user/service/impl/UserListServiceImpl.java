@@ -1,11 +1,10 @@
 package com.xn.find_xn_user.service.impl;
 
 import com.xn.find_xn_user.dao.UserListDao;
-import com.xn.find_xn_user.domain.Accounts;
-import com.xn.find_xn_user.domain.QueryResult;
-import com.xn.find_xn_user.domain.RegisterResult;
-import com.xn.find_xn_user.domain.UserIDResult;
+import com.xn.find_xn_user.domain.*;
 import com.xn.find_xn_user.service.UserListService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +16,17 @@ import java.util.Map;
 
 @Service
 public class UserListServiceImpl implements UserListService {
+    public final Logger logger = LoggerFactory.getLogger(UserListServiceImpl.class);
+
     @Autowired
     private UserListDao userListDao;
 
+    /**
+     * 通过last_id进行条数查询
+     *
+     * @param last_id
+     * @return
+     */
     @Override
     public QueryResult findUserListApi(String last_id) {
         try {
@@ -62,43 +69,86 @@ public class UserListServiceImpl implements UserListService {
 
     /**
      * 根据用户名查询ID
+     * 如果矿机名称不存在就入库
      *
      * @param username
      * @return
      */
     @Override
     public UserIDResult findUsernameById(String username) {
+        String userStr = "";
+        //查找出数据库的所有用户
         List allUser = findAllUser();
-        if (allUser.contains(username)) {
-            Integer usernameById = userListDao.findUsernameById(username);
-            return new UserIDResult(usernameById, 200);
-        } else if (!allUser.contains(username)) {
+        List allPoolWorker = findAllPoolWorker();
+
+        //对传入的参数进行切割,取出.前面的字母
+        String[] user = username.split("\\.");
+        for (int i = 0; i < user.length; i++) {
+            userStr = user[0];
+        }
+
+
+        //对传入的用户名进行正则匹配,符合规则的进行入库操作
+        boolean matches = username.matches("(^\\w*\\d*)*(\\.{1}\\d*)+x{1}\\d+$");
+        //如果传入的用户名不存在就加入矿机表
+        Integer accountId = null;
+        if (!allPoolWorker.contains(username) && matches == true) {
+            try {
+                logger.info("矿机名称不存在!");
+                //首先还要去获取account_id,去判断有没有这个用户,有才返回ID
+                //然后通过username和AccountId进行入库
+                if (allUser.contains(userStr)) {
+                    accountId = userListDao.findUsernameById(userStr);//查询poolworker需要的account_id
+                    userListDao.savePoolWorker(accountId, username);
+                    logger.info("矿机名入库成功");
+                } else {
+                    logger.info("用户名不存在,或者用户名格式不正确!");
+                }
+            } catch (Exception e) {
+                logger.info(e.getMessage());
+            }
+        }
+
+        //如果存在就直接返回用户id
+        //如果用户名字符串在用户名集合中,那么就根据用户名查ID
+        if (allUser.contains(userStr)) {
+            accountId = userListDao.findUsernameById(userStr);
+            return new UserIDResult(accountId, 200);
+        } else if (!allUser.contains(userStr)) {
             Integer id = null;
             return new UserIDResult(id, 404);
         } else {
             return new UserIDResult("服务出现异常!!!", 500);
         }
+
     }
 
+
+    /**
+     * 查找所有的矿机列表
+     *
+     * @return
+     */
+    @Override
+    public List findAllPoolWorker() {
+        List allPoolWorker = userListDao.findAllPoolWorker();
+        return allPoolWorker;
+    }
+
+    @Override
+    public Accounts selectUser(String username) {
+        return  userListDao.selectUser(username);
+    }
+
+    /**
+     * 查找所有的用户
+     *
+     * @return
+     */
     @Override
     public List findAllUser() {
         List allUser = userListDao.findAllUser();
         return allUser;
-    }
-
-    @Override
-    public RegisterResult saveUser(RegisterResult registerResult) {
-        //查找数据库所有的用户
-        List allUser = findAllUser();
-        //将传入的用户同数据库中做对比,如果数据库没有就执行入库,返回相应的状态
-        String username = registerResult.getUsername();
-        if (!"".equals(username) && username != null && !"null".equals(username) && !allUser.contains(username)) {
-            userListDao.saveUser(registerResult);
-            return new RegisterResult(registerResult.getUsername(), registerResult.getId(), 201);
-        } else {
-            //否则就返回400状态
-            return new RegisterResult("用户名重复或者用户名不符合规范", 400);
-        }
     }
 
 

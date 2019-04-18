@@ -9,5 +9,4 @@ public class FindXnUserApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FindXnUserApplication.class, args);
 	}
-
 }
