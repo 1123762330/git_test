@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.SharesMapper">
+    <resultMap id="BaseResultMap" type="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Shares">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="rem_host" property="remHost" jdbcType="VARCHAR"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="our_result" property="ourResult" jdbcType="CHAR"/>
+        <result column="upstream_result" property="upstreamResult" jdbcType="CHAR"/>
+        <result column="reason" property="reason" jdbcType="VARCHAR"/>
+        <result column="solution" property="solution" jdbcType="VARCHAR"/>
+        <result column="difficulty" property="difficulty" jdbcType="REAL"/>
+        <result column="time" property="time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="getLastInsertedShareId" resultType="Integer">
+        SELECT MAX(id) FROM shares
+     </select>
+
+    <!--   <select id="getSharesForAccounts" resultType="List">
+           SELECT
+           a.id,
+           SUBSTRING_INDEX( s.username , '.', 1 ) AS username,
+           a.no_fees AS no_fees,
+           IFNULL(SUM(IF(our_result='Y', IF(s.difficulty=0, POW(2, (20 - 16)), s.difficulty), 0)), 0) AS valid,
+           IFNULL(SUM(IF(our_result='N', IF(s.difficulty=0, POW(2, (20 - 16)), s.difficulty), 0)), 0) AS invalid
+           FROM shares AS s
+           LEFT JOIN accounts AS a
+           ON a.username = SUBSTRING_INDEX( s.username , '.', 1 )
+           WHERE s.id > 0 AND s.id &lt;= 485 AND a.is_locked != 2
+           GROUP BY username DESC
+       </select>-->
+    <select id="selectAllShares" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Shares">
+       select * from  shares
+    </select>
+    <!--通过记录id查找已预结算的数据-->
+    <!--List<Shares> selectById(Integer ppsId);-->
+    <select id="selectById" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Shares">
+        SELECT
+          id,rem_host,username,our_result,upstream_result,reason,solution,difficulty,time
+        FROM
+           shares_history
+        WHERE
+           id between #{startId} AND #{ppsId}
+        ORDER BY time;
+    </select>
+    <!--查询用户小时算力 ================= 改-->
+    <!--Float selectUserDifficulty(@Param("beforeTime")String beforeTime,@Param("updateTime")String updateTime,@Param("user") String user);-->
+    <select id="selectUserDifficulty" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UserDifficulty">
+        SELECT
+        SUBSTRING_INDEX(username , '.', 1 ) AS user,SUM(difficulty) AS difficulty,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS time
+        FROM shares_history
+        WHERE TIME >=#{beforeTime} AND TIME &lt; #{updateTime}
+        GROUP BY USER,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s')
+    </select>
+    <!--在history表通过时间段查询算力 改-->
+    <!--Float selectBYTime(@Param("beforeTime")Date beforeTime,@Param("updateTime")Date updateTime,@Param("username") String username)-->
+    <select id="selectBYTime" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UsernameDifficulty">
+        SELECT
+           SUM(difficulty) AS difficulty,username
+        FROM
+            shares_history
+        WHERE
+            TIME BETWEEN #{beforeTime} AND #{updateTime}
+         GROUP BY username
+    </select>
+    <!--在history表通过时间段查询有效算力 改-->
+    <!--Float selectValidByTime(@Param("beforeTime")Date beforeTime,@Param("updateTime")Date updateTime,@Param("username") String username);-->
+    <select id="selectValidByTime" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UsernameDifficulty">
+         SELECT
+           SUM(difficulty) AS difficulty,username
+        FROM
+            shares_history
+        WHERE
+            TIME BETWEEN #{beforeTime} AND #{updateTime}
+        AND our_result='Y'
+        GROUP BY username
+    </select>
+    <!--查询24小时矿池算力-->
+    <!--List<Difficulty> select24DifficultyByzeroTime(@Param("zeroTime")Date zeroTime);-->
+    <select id="select24DifficultyByzeroTime"
+            resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Difficulty">
+        SELECT SUM(difficulty) difficulty,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS TIME
+        FROM shares_history
+        WHERE TIME &gt;= #{zeroTime} AND TIME &lt; #{twentyfourTime}
+        GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s')
+    </select>
+
+    <!--在shares中查询所有username-->
+    <!--List<String> selectUsername();-->
+    <select id="selectUsername" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UserNameTime">
+     SELECT
+        username,max(time) AS time
+    FROM
+        shares WHERE id BETWEEN #{startId} AND #{lastId} Group By username
+    </select>
+    <!--根据ilastId查询更新时间-->
+    <!-- Date selectTimeById(Integer lastId);-->
+    <select id="selectTimeById" resultType="String">
+        SELECT TIME FROM shares WHERE id = #{lastId}
+    </select>
+
+    <!--Integer selectPoolWorks(@Param("beforeTime")String beforeTime,@Param("updateTime")String updateTime);-->
+    <select id="selectPoolWorks" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.PoolDifficulty">
+         SELECT
+            SUM(difficulty) AS difficulty ,COUNT(1) AS COUNT
+        FROM
+           shares_history
+        WHERE TIME BETWEEN #{beforeTime} AND #{updateTime}
+    </select>
+    <!--查询矿池日平均算力-->
+    <!-- Double selectPoolAvgDifficulty(@Param("zeroTime")String zeroTime,@Param("updateTime")String updateTime);-->
+    <select id="selectPoolAvgDifficulty" resultType="java.lang.Double">
+      SELECT
+        (SUM(difficulty)/((TIME_TO_SEC(MAX(TIME)) - TIME_TO_SEC(MIN(TIME)))/60)*24) AS avg
+        From shares_history where time between #{zeroTime} And #{updateTime};
+    </select>
+    <!--将shares表已结算数据转移到history表1分钟-->
+    <!--Integer insertHistory(Integer startId, Integer lastId);-->
+    <insert id="insertHistory">
+     INSERT INTO shares_history(username,difficulty,count,time,our_result)
+      SELECT
+      username,SUM(difficulty) AS difficulty,COUNT(1)AS count ,time,our_result
+      FROM shares WHERE id BETWEEN #{startId} AND #{lastId}
+      GROUP BY username,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(1*60)),'%Y-%m-%d %H:%i:%s'),our_result;
+    </insert>
+    <!--将shares表已结算数据转移到shares_middle表 保存1天-->
+    <insert id="insertMiddle">
+       INSERT INTO shares_middle(username,difficulty,COUNT,TIME,our_result)
+      SELECT
+      username,SUM(difficulty) AS difficulty,COUNT(1)AS COUNT ,TIME,our_result
+      FROM shares WHERE id BETWEEN #{startId} AND #{lastId}
+      GROUP BY username,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(1*60)),'%Y-%m-%d %H:%i:%s'),our_result;
+    </insert>
+    <!--根据lastId删除数据-->
+    <!--Integer deleteById(Integer lastId);-->
+    <delete id="deleteById">
+        DELETE FROM shares WHERE id&lt;=#{lastId};
+    </delete>
+
+
+    <select id="avgHashrate" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Hashrate">
+        SELECT
+        MIN(TIME) AS mintime,MAX(TIME) AS maxtime,username,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(15*60)),'%Y-%m-%d %H:%i:%s') AS startTime,
+        SUM(difficulty)/((TIME_TO_SEC(MAX(TIME)) - TIME_TO_SEC(MIN(TIME)))/60) hashrate,MAX(id) AS lastId
+        FROM shares_history WHERE TIME >=#{startDate} AND TIME &lt;#{endDate}
+        GROUP BY username,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(15*60)),'%Y-%m-%d %H:%i:%s');
+    </select>
+
+
+    <select id="findRealHashrate" resultType="Float">
+        SELECT difficulty FROM shares_history WHERE id=#{realHashrateId};
+    </select>
+
+
+    <select id="findUserOneWorkerWeekData" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.WeekShares">
+        SELECT  username,SUM(difficulty) difficulty,
+                SUM(difficulty)/((TIME_TO_SEC(MAX(TIME)) - TIME_TO_SEC(MIN(TIME)))/60) avghashrate,
+                FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS TIME
+        FROM shares_history WHERE TIME BETWEEN #{beforeWeekDate} AND #{nowDate}
+        GROUP BY username,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s');
+    </select>
+
+    <select id="findUserAllWorkerAverageForce"
+            resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.AllWorkerAverageForce">
+        SELECT FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS startTime,
+        SUM(difficulty)/60 AS avghashrate,
+        SUM(difficulty) AS realhashrate,
+        SUBSTRING_INDEX(username , '.', 1 ) AS user
+        FROM shares_history
+        WHERE TIME >=#{startTime} AND TIME &lt;#{endTime}
+        GROUP BY user,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s');
+    </select>
+    <!-- 查询user 和 count  -->
+    <select id="selectUser" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UserCount">
+        SELECT
+        SUBSTRING_INDEX(username , '.', 1 ) AS user,count(1) AS count
+        FROM shares WHERE id BETWEEN #{startIndex} AND #{lastIndex}
+        GROUP BY user
+    </select>
+    <select id="selectMidDay" resultType="Date">
+       SELECT DATE_FORMAT(TIME,'%Y%m%d') days FROM shares_history GROUP BY days ORDER BY days;
+    </select>
+
+<select id="getUsernameAndUser" resultType="String">
+     SELECT username FROM shares_history GROUP BY  username
+</select>
+
+    <!--List<String> selectusernameByDay(Integer day);-->
+    <select id="selectusernameByDay" resultType="String">
+        SELECT
+           username
+        FROM
+           shares_history
+        WHERE
+           DATE_SUB(CURDATE(), INTERVAL #{day} DAY) &lt;= DATE(time)
+        group by username
+    </select>
+    <!-- 查询一天的有效率和无效率  -->
+    <select id="findUserValid" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.Valid">
+       SELECT
+        SUBSTRING_INDEX(username , '.', 1 ) AS user,our_result AS ourResult,COUNT(1) AS count,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS time
+        FROM shares_history
+        WHERE TIME >= #{startDate} AND TIME &lt; #{endDate}
+        GROUP BY USER,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s'),our_result
+
+    </select>
+
+    <!--List<MillValid> findUsernameValid(@Param("startDate") Date startDate,@Param("endDate") Date endDate);-->
+    <select id="findUsernameValid" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.MillValid">
+        SELECT
+        username,our_result AS ourResult,COUNT(1) AS COUNT,
+        FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS time
+        FROM shares_history
+        WHERE TIME >= #{startDate} AND TIME &lt; #{endDate}
+        GROUP BY username,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s'),our_result
+    </select>
+    <!--List<UsernameDifficulty> findOneHourMill(@Param("beforeTime") Date beforeTime, @Param("updateTime") Date updateTime);-->
+    <select id="findOneHourMill" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.UsernameDifficulty">
+        SELECT
+        username,SUM(difficulty) AS difficulty,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s') AS TIME
+        FROM
+        shares_history
+        WHERE TIME >= #{beforeTime} AND TIME &lt; #{updateTime}
+        GROUP BY username,FROM_UNIXTIME(UNIX_TIMESTAMP(TIME)-(UNIX_TIMESTAMP(TIME)%(60*60)),'%Y-%m-%d %H:%i:%s')
+    </select>
+
+    <!--List<String> findUsernameByPool(Integer day);-->
+    <select id="findUsernameByPool" resultType="String">
+        SELECT
+        username
+        FROM
+        shares_history
+        WHERE
+        DATE_SUB(CURDATE(), INTERVAL #{day} DAY) &lt;= DATE(TIME)
+        GROUP BY username
+    </select>
+    <!-- List<String>  findUserByPool(Integer day);-->
+    <select id="findUserByPool" resultType="String">
+        SELECT
+        SUBSTRING_INDEX( username , '.', 1 ) AS name
+        FROM
+        shares_history
+        WHERE
+        DATE_SUB(CURDATE(), INTERVAL #{day} DAY) &lt;= DATE(TIME)
+        GROUP BY name
+    </select>
+
+    <!--Integer OpenTimer();-->
+    <update id="OpenTimer" >
+        SET GLOBAL event_scheduler=1
+    </update>
+</mapper>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.xn.bmpos.api.bmposapi.domain.mapper.SettingMapper">
+<!--String getValueByKey(String configKey)-->
+    <select id="findValueByKey" resultType="java.lang.String">
+        SELECT value FROM settings WHERE name = #{name}
+    </select>
+</mapper>

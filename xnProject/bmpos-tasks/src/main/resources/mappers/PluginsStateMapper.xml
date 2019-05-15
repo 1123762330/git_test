@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.PluginsStateMapper">
+  <resultMap id="stateVO" type="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.StateVO">
+    <id column="sid" property="sid" />
+    <result column="success" property="success" />
+    <result column="failed" property="failed" />
+    <result column="plugins_id" property="pluginsId" />
+    <collection property="errorEntries" ofType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.ErrorEntry">
+      <id column="id" property="id"/>
+      <result column="message" property="message"/>
+      <result column="time" property="time" />
+    </collection>
+  </resultMap>
+  <!-- Integer insert(PluginsState pluginsState);-->
+  <insert id="insert" parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.PluginsState" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO
+       plugins_state (success,failed,plugins_id,time)
+    VALUES 
+        (#{success},#{failed},#{pluginsId},#{time})
+  </insert>
+  <!-- Integer updatebyPluginsId(String pluginsId);-->
+  <update id="updatebyPluginsId" parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.PluginsState">
+    UPDATE
+       plugins_state
+    SET
+       <if test="success!=null">success=#{success},</if>
+       <if test="failed!=null">failed=#{failed},</if>
+       time=#{time}
+    WHERE
+    plugins_id=#{pluginsId} AND id=#{id}
+  </update>
+  <!-- StateVO findByPluginsId(String pluginsId);-->
+  <select id="findByPluginsId" resultMap="stateVO" >
+    SELECT
+      p.id AS sid,success,failed,p.plugins_id,e.id AS id,message,e.time AS time
+    FROM
+      plugins_state AS  p JOIN error e
+    ON
+      p.plugins_id = e.plugins_id
+    WHERE
+      p.plugins_id = #{pluginsId}
+    ORDER BY
+      e.time DESC
+    LIMIT 10
+  </select>
+  <!--PluginsState findIdByPluginsId(String pluginsId);-->
+  <select id="findIdByPluginsId"  resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.PluginsState" >
+    SELECT id,success,failed,plugins_id AS pluginsId FROM plugins_state WHERE plugins_id=#{pluginsId}
+  </select>
+</mapper>

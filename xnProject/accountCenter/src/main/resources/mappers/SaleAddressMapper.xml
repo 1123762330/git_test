@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xnpool.account.mappers.SaleAddressMapper">
+    <!--Integer insert(SaleAddress saleAddress);-->
+    <insert id="insert" parameterType="com.xnpool.account.entity.SaleAddress" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+           sale_address (account_id,currency,coin_address,created_at)
+        VALUES
+           (#{accountId},#{currency},#{coinAddress},#{createdAt})
+    </insert>
+    <!-- Integer update(SaleAddress saleAddress);-->
+    <update id="update" >
+        UPDATE
+           sale_address
+        SET
+           <if test="coinAddress!=null">coin_address=#{coinAddress},</if>
+        updated_at=#{updatedAt}
+        WHERE
+           id=#{id}
+    </update>
+    <!--SaleAccountVO selectById(Integer id);-->
+    <select id="selectById" resultType="com.xnpool.account.entity.SaleAccountVO">
+        SELECT
+          a.user_id AS userId,currency,coin_address AS  coinAddress
+        FROM
+          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id
+        WHERE
+           ad.id=#{id} AND a.deleted_at Is null AND  ad.deleted_at Is null;
+    </select>
+    <!--SaleAddress selectByC(String currency);-->
+    <select id="selectByC" resultType="com.xnpool.account.entity.SaleAddress">
+        SELECT
+            coin_address AS coinAddress
+        FROM
+           sale_address
+        WHERE
+           currency=#{currency} AND deleted_at Is null;
+    </select>
+    <!--List<SaleAddress> selectByAccountId(Integer accountId);-->
+    <select id="selectByAccountId" resultType="com.xnpool.account.entity.SaleAddress" >
+        SELECT
+          currency,coin_address AS coinAddress
+        FROM
+           sale_address
+        WHERE
+           account_id=#{accountId} AND deleted_at Is null;
+    </select>
+    <!--SaleAddress seletcByAidAndCurrency(
+            @Param("accountId") Integer accountId,
+            @Param("currency") String currency);-->
+    <select id="seletcByAidAndCurrency" resultType="com.xnpool.account.entity.SaleAccountVO">
+        SELECT
+           a.user_id As userId, a.name AS name, currency,coin_address AS  coinAddress,a.id AS accountId,settle_share AS settleShare
+        FROM
+          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id
+        WHERE
+           a.name =#{name} AND currency=#{currency}  AND a.deleted_at IS NULL AND  ad.deleted_at IS NULL
+    </select>
+    <!--Integer deleteByid(Integer id,Date time);-->
+    <update id="deleteByid" >
+        UPDATE
+          sale_address
+        SET
+          deleted_at = #{time}
+        WHERE
+          id=#{id}
+    </update>
+    <!--SaleAccountVO selectByCidAndCurrency( @Param("accountId") Integer accountId, @Param("currency") String currency);-->
+    <select id="selectByCidAndCurrency" resultType="com.xnpool.account.entity.SaleAccountVO" >
+        SELECT
+           a.user_id As userId, a.name AS name, currency,coin_address AS  coinAddress,a.id AS accountId
+        FROM
+          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id
+        WHERE
+           a.id =#{accountId} AND currency=#{currency}  AND a.deleted_at IS NULL AND  ad.deleted_at IS NULL
+        LIMIT 1
+    </select>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.ErrorMapper">
+  <!-- Integer insert(ErrorEntry error);-->
+<insert id="insert" parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.ErrorEntry" keyProperty="id" useGeneratedKeys="true" >
+  INSERT INTO
+      error (message,time,plugins_id)
+  VALUES
+      (#{message},#{time},#{pluginsId})
+</insert>
+  <!-- List<ErrorEntry> findByError(String pluginsId);-->
+  <select id="findByError" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.ErrorEntry">
+    SELECT
+       message,time,plugins_id AS pluginsId  FROM error
+    WHERE
+       plugins_id=#{pluginsId}
+    ORDER BY
+      time
+    LIMIT 5;
+  </select>
+</mapper>

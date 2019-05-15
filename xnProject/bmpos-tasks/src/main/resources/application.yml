@@ -1,0 +1,77 @@
+server:
+  port: 8765
+---
+spring:
+  datasource:
+    username: root
+    password: root123
+    url: jdbc:mysql://192.168.0.157:3306/bpos?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  application:
+    name: bmpos-task
+  main:
+    allow-bean-definition-overriding: true
+mybatis:
+  mapper-locations: classpath:mappers/*.xml
+---
+mybatis-plus:
+  type-aliases-package: com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain
+  mapper-locations:  classpath:/mappers/*Mapper.xml
+  global-config:
+    refresh-mapper: true
+     #驼峰下划线转换
+    column-underline: true
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+---
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    registryFetchIntervalSeconds: 5
+    service-url:
+      defaultZone: http://192.168.0.155:9601/eureka/
+---
+myprops:
+  dirPath: /opt/xn-microService/taskManager/plugins #
+  filePath: database.properties
+  classStr: ITaskInit,ITaskExe,ITaskHalt
+  logPath: /opt/xn-microService/taskManager/log
+  time: 0/10 * * * * ?
+
+
+
+spring:
+  redis:
+    host: 192.168.0.44 # Redis服务器地址
+    port: 6379 # Redis服务器连接端口
+    password: # Redis服务器连接密码（默认为空）
+    database: 0 #Redis数据库索引（默认为0）
+    lettuce:
+      pool:
+        max-active: 32 # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1ms # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 16 # 连接池中的最大空闲连接
+        min-idle: 8 # 连接池中的最小空闲连接
+    timeout: 90000ms
+
+http:
+  maxTotal: 100 #最大连接数
+  defaultMaxPerRoute: 50 #并发数
+  connectTimeout: 1000 #创建连接的最长时间
+  connectionRequestTimeout: 500 #从连接池中获取到连接的最长时间
+  socketTimeout: 10000 #数据传输的最长时间
+  staleConnectionCheckEnabled: true #提交请求前测试连接是否可用
+
+httpClient:
+  wallet-ip: http://192.168.0.122:8980/api
+  account-ip: http://192.168.0.44:8766

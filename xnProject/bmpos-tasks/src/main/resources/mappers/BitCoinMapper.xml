@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.BitCoinMapper" >
+  <resultMap id="BaseResultMap" type="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.BitCoin" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="host" property="host" jdbcType="INTEGER" />
+    <result column="debug_level" property="debugLevel" jdbcType="VARCHAR" />
+    <result column="debug_object" property="debugObject" jdbcType="VARCHAR" />
+    <result column="memcache" property="memcache" jdbcType="VARCHAR" />
+  </resultMap>
+  <select id="getBitCoinsByDebugObject" resultType="list">
+     SELECT * FROM bit_coin WHERE debug_level = #{debug_object}
+  </select>
+  
+</mapper>

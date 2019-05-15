@@ -1,0 +1,36 @@
+
+server:
+  port: 8766
+---
+spring:
+  application:
+    name: account-api
+---
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    registryFetchIntervalSeconds: 5
+    service-url:
+      defaultZone: http://192.168.0.155:9601/eureka/
+spring:
+  datasource:
+    username: root
+    password: root123
+    url: jdbc:mysql://192.168.0.157:3306/bpos-account?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  main:
+    allow-bean-definition-overriding: true
+mybatis:
+  mapper-locations: classpath:mappers/*.xml
+
+
+---
+#oauth 网络接口
+oauthServer:
+  Url:  http://192.168.0.122:9999
+  #增加app的应用名称--验证token 需要请求头
+  client-id: xnpool-app
+  client-secret: xnpool-app-secret

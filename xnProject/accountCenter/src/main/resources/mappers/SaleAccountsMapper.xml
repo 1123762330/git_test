@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xnpool.account.mappers.SaleAccountMapper">
+<!--Integer insert(SaleAccount saleAccount);-->
+  <insert id="insert" parameterType="com.xnpool.account.entity.SaleAccount" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO sale_account (user_id,name,password,created_at) VALUES (#{userId},#{name},#{password},#{createdAt})
+  </insert>
+<!-- Integer update(SaleAccount saleAccount);-->
+  <update id="update" parameterType="com.xnpool.account.entity.SaleAccount">
+    UPDATE
+       sale_account
+    SET
+       <if test="name!=null">name=#{name},</if>
+       <if test="password!=null">password=#{password}</if>
+       updated_at = #{updatedAt}
+    WHERE
+       id = #{id}
+  </update>
+<!--SaleAccount selectById(Integer id);-->
+  <select id="selectById" resultType="com.xnpool.account.entity.SaleAccount">
+    SELECT
+      user_id AS userId,name
+    FROM
+       sale_account
+    WHERE
+       id = #{id} AND deleted_at Is null;
+  </select>
+    <!--List<SaleAccount> selectByUid(Integer uid);-->
+    <select id="selectByUid" resultType="com.xnpool.account.entity.SaleAccount">
+     SELECT
+       id,name
+     FROM
+        sale_account
+     WHERE user_id=#{userId} AND deleted_at Is null;
+    </select>
+    <!-- String getUsernameByCoinAndAddress(@Param("coin") String coin,@Param("address") String address);-->
+    <select id="getUsernameByCoinAndAddress" resultType="String" >
+         SELECT
+           a.name AS name
+        FROM
+          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id
+        WHERE
+           ad.coin_address =#{address} AND currency=#{coin}  AND a.deleted_at IS NULL AND  ad.deleted_at IS NULL
+        LIMIT 1
+    </select>
+    <!--SaleAccount selectByName(String name,Integer userId);-->
+    <select id="selectByName" resultType="com.xnpool.account.entity.SaleAccount">
+     SELECT
+       id
+     FROM
+        sale_account
+     WHERE name=#{name} AND user_id=#{userId} AND deleted_at Is null;
+    </select>
+    <!--Integer deleteByid(Integer id,Date time);-->
+    <update id="deleteByid" >
+        UPDATE
+          sale_account
+        SET
+          deleted_at = #{time}
+        WHERE
+          id=#{id}
+    </update>
+    <!--通过用户查询子账号列表和对应的币种列表-->
+    <select id="selectUsersAndCoins" resultType="com.xnpool.account.entity.UsersAndCoins">
+        select a.id AS accountId,a.name,b.coin_address AS coinAddress,b.currency
+        from sale_account AS a,sale_address AS b
+        WHERE a.id=b.account_id AND a.user_id=#{userId}
+        ORDER BY a.user_id
+    </select>
+
+    <!--通过用户查询子账号列表和对应的币种列表-->
+    <select id="findDataByAddress" resultType="Integer">
+    select id from sale_address where currency=#{coin} AND coin_address=#{address} LIMIT 1;
+</select>
+    <!--通过用户名查询用户Id-->
+    <select id="selectUsersId" resultType="Integer">
+  select userid from t_user where name=#{usersName};
+</select>
+</mapper>

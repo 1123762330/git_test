@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xnpool.account.mappers.MillMapper">
+    <!--Integer insertMill(String user,String oldName);-->
+    <insert id="insertMill" >
+      INSERT INTO
+        mill (name,old_name,account_name,coin)
+      values
+        (#{name},#{oldName},#{accountName},#{coin})
+    </insert>
+
+    <!--List<String> findOldNameByUser(String accountName);-->
+    <select id="findOldNameByUser" resultType="String" >
+        SELECT old_name FROM  mill WHERE account_name = #{accountName}
+    </select>
+    <!-- List<Integer> findIdByUser(String user);-->
+    <select id="findIdByUser" resultType="Integer" >
+        SELECT id FROM  mill WHERE account_name = #{accountName}
+    </select>
+    <!--Integer updateName(@Param("oldName") String oldName,@Param("name") Stri-->
+    <update id="updateName" >
+       UPDATE
+         mill
+       SET
+         name = #{name}
+       WHERE
+         account_name = #{accountName} AND old_name = #{oldName}
+    </update>
+    <!--Integer updateGroup(List indexs);-->
+    <update id="updateGroup" >
+        UPDATE mill
+        SET group_id = #{groupId}
+        WHERE
+          id IN
+         <foreach collection="indexs" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+         </foreach>
+    </update>
+
+    <!--添加分组-->
+    <insert id="addGroup">
+      INSERT INTO mill_group (name,userId) VALUES (#{groupName},#{userId}) ;
+    </insert>
+
+    <!--删除分组-->
+    <update id="delGroup">
+        UPDATE  mill
+        SET mill.activate=1
+        WHERE  id IN
+        <foreach collection="groupIds" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--查询所有矿机-->
+    <select id="selectGroup" resultType="com.xnpool.account.entity.MillName">
+        SELECT account_name AS accountName,mill_group.id AS groupId,mill.name AS millName,mill.old_name AS oldName,mill_group.name AS groupName FROM mill
+        JOIN mill_group ON mill.group_id = mill_group.id WHERE userId=#{userId} AND coin = #{coin};
+    </select>
+
+    <!--selectGroupId查询矿机分组后的数据-->
+    <select id="selectGroupId" resultType="com.xnpool.account.entity.MillName" parameterType="Integer">
+        SELECT NAME AS millName,old_name AS oldName FROM mill WHERE group_id=#{groupId};
+    </select>
+    <!-- String getNameByOldName(String oldName);-->
+    <select id="getNameByOldName" resultType="com.xnpool.account.entity.MillName">
+            SELECT
+            mill.id AS millId, mill.NAME As millName,group_id AS groupId,mill_group.name AS groupName
+         FROM
+            mill
+         JOIN mill_group ON mill.group_id = mill_group.id
+            WHERE old_name = #{oldName} AND coin = #{coin}  AND mill.activate = 0 LIMIT 1;
+    </select>
+   <!--String findGroupName(Integer userId);-->
+    <select id="findGroupName" resultType="String" >
+         SELECT name FROM mill_group WHERE userId = #{userId}
+    </select>
+    <!--String findNewName(String oldName);-->
+    <select id="findNewName" resultType="String">
+        SELECT name from mill where old_name = #{oldName}
+    </select>
+</mapper>

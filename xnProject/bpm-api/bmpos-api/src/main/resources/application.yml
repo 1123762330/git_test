@@ -1,0 +1,91 @@
+server:
+  port: 8982
+---
+spring:
+  application:
+    name: bmpos-api
+---
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    registryFetchIntervalSeconds: 5
+    service-url:
+      defaultZone: http://192.168.0.155:9601/eureka/
+---
+spring:
+    datasource:
+        name: mysql_test
+        type: com.alibaba.druid.pool.DruidDataSource
+        druid:
+          filters: stat
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.0.157:3306/bpos?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+          username: root
+          password: root123
+          initial-size: 1
+          min-idle: 1
+          max-active: 20
+          max-wait: 60000
+          time-between-eviction-runs-millis: 60000
+          min-evictable-idle-time-millis: 300000
+          validation-query: SELECT 'x'
+          test-while-idle: true
+          test-on-borrow: false
+          test-on-return: false
+          pool-prepared-statements: false
+          max-pool-prepared-statement-per-connection-size: 20
+---
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  typeAliasesPackage:  com.xn.bmpos.api.bmposapi.domain.dao
+  global-config:
+    db-config:
+      id-type: AUTO
+      field-strategy: not_empty
+      column-underline: true
+      #capital-mode: true
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      db-type: mysql
+    refresh: true
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+---
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+    database: 0
+    lettuce:
+      pool:
+        max-active: 32
+        max-wait: -1ms
+        max-idle: 16
+        min-idle: 8
+    timeout: 90000ms
+
+---
+http:
+  maxTotal: 100
+  defaultMaxPerRoute: 50
+  connectTimeout: 1000
+  connectionRequestTimeout: 500
+  socketTimeout: 10000
+  staleConnectionCheckEnabled: true
+---
+httpClient:
+   reward-api:  http://192.168.0.122:8981
+   account-ip:  http://192.168.0.44:8766
+---
+
+#pagehelper分页插件配置
+pagehelper:
+  auto-dialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: countSql

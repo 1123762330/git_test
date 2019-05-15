@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.TransacTionsMapper">
+    <!-- List<Transactions> getDailyQueue(String type);-->
+
+    <select id="getDailyQueue" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.TransacTions">
+          SELECT
+            id,account_id AS accountId,coin_address AS coinAddress,amount,block_id AS blockId,
+            timestamp,txid,archived
+          FROM
+            transactions
+          WHERE type = #{type} AND archived = 0;
+  </select>
+
+
+    <insert id="createDebitAPRecord" parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.TransacTions"
+            keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO transactions (account_id,coin_address,amount,type) VALUES (#{accountId},#{coinAddress},#{amount},#{type})
+  </insert>
+
+
+    <!--Integer setRPCTxId(Integer transactionId,String rpcTxid)-->
+    <update id="setRPCTxId">
+      UPDATE
+         transactions
+      SET
+         txid = #{rpcTxid}
+      WHERE
+         id = #{transactionId}
+  </update>
+
+    <!--List<Transactions> getBalance(Integer accountId);-->
+    <select id="getBalance" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.payout.TransactionsVO">
+        SELECT
+        IFNULL((
+        SUM( IF( ( t.type IN ('Credit','Bonus') AND b.confirmations >= #{confirmations} ) OR t.type = 'Credit_PPS', t.amount, 0 ) ) -
+        SUM( IF( t.type IN ('Debit_MP', 'Debit_AP'), t.amount, 0 ) ) -
+        SUM( IF( ( t.type IN ('Donation','Fee') AND b.confirmations >= #{confirmations} ) OR ( t.type IN ('Donation_PPS', 'Fee_PPS', 'TXFee') ), t.amount, 0 ) )
+        ), 0) AS confirmed,
+        IFNULL((
+        SUM( IF( t.type IN ('Credit','Bonus') AND b.confirmations &lt; #{confirmations} AND b.confirmations >= 0, t.amount, 0 ) ) -
+        SUM( IF( t.type IN ('Donation','Fee') AND b.confirmations &lt; #{confirmations} AND b.confirmations >= 0, t.amount, 0 ) )
+        ), 0) AS unconfirmed,
+        IFNULL((
+        SUM( IF( t.type IN ('Credit','Bonus') AND b.confirmations = -1, t.amount, 0) ) -
+        SUM( IF( t.type IN ('Donation','Fee') AND b.confirmations = -1, t.amount, 0) )
+        ), 0) AS orphaned
+        FROM transactions AS t
+        LEFT JOIN blocks AS b
+        ON t.block_id = b.id
+        WHERE t.account_id = #{accountId}
+        AND archived = 0
+    </select>
+
+    <!--Integer addTransaction(Transactions transactions);-->
+    <insert id="addTransaction" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.TransacTions">
+        INSERT INTO
+            transactions (account_id,amount,block_id,type,coin_address,txid)
+        VALUES
+            (#{accountId},#{amount},#{blockId},#{type},#{coinAddress},#{txid})
+    </insert>
+
+    <!--Integer setArchived(Integer accountId,String txid);-->
+    <update id="setArchived">
+        UPDATE
+            transactions
+        SET
+            archived = 1
+        WHERE
+            archived = 0
+        AND (
+        ( account_id = #{accountId} AND id &lt;= #{id} )
+        OR ( account_id = #{accountId} AND id &lt;= #{id} AND type IN ( 'Credit_PPS', 'Donation_PPS', 'Fee_PPS', 'TXFee', 'Debit_MP', 'Debit_AP' ) )
+        )
+
+    </update>
+
+    <select id="getAPQueue" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.daily.DailyVO">
+  SELECT
+        id,
+        account_id AS accountId,
+        coin_address AS coinAddress,
+        IFNULL(
+            (
+              SUM( IF( ( TYPE IN ('Credit','Bonus') ) OR TYPE = 'Credit_PPS', amount, 0 ) ) -
+              SUM( IF( TYPE IN ('Debit_MP', 'Debit_AP'), amount, 0 ) ) -
+              SUM( IF( ( TYPE IN ('Donation','Fee') ) OR ( TYPE IN ('Donation_PPS', 'Fee_PPS', 'TXFee') ), amount, 0 ) )
+          ), 0
+        ) AS confirmed
+      FROM transactions
+      WHERE archived = 0 AND coin_address IS NOT NULL AND coin_address != ''
+	GROUP BY accountId DESC,coinAddress
+      HAVING confirmed > #{confirmed}
+      LIMIT #{limit};
+    </select>
+    <!--    Integer setArchivedForDebit_Daily(Integer dailyId,Integer id,Integer txid);-->
+    <update id="setArchivedForDebit_Daily">
+      UPDATE transactions AS t
+      SET t.archived = 1,
+          t.type = (IF (t.id= #{id}, 'finish_DebitDaily', t.type ))
+      WHERE t.archived = 0
+      AND   t.id IN (#{dailyId}, #{id} ,#{txid});
+    </update>
+
+    <!--Double findbyType(String type,Integer accountId);-->
+    <select id="findbyType" resultType="java.lang.Double">
+        SELECT
+           SUM(amount) AS amount
+        FROM
+          transactions
+        WHERE type = #{type} AND account_id = #{accountId}
+
+    </select>
+</mapper>

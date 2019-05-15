@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.SettingsMapper">
+    <!--String fingValue(String configKey)-->
+    <select id="findValue" resultType="String">
+        SELECT config_value AS configValue FROM settings WHERE config_key = #{configKey} LIMIT 1
+    </select>
+
+
+</mapper>

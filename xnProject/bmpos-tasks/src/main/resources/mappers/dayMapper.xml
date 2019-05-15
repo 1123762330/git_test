@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.mapper.DayMapper">
+    <!--List<DailyVO> findByConfig(DailyConfig dailyConfig)-->
+    <select id="findByConfig" resultType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.daily.DailyVO">
+      SELECT
+        a.account_id AS accountId,
+        a.name AS name,
+        ap_threshold AS  apThreshold,
+        ca.coin_address AS coinAddress,
+        IFNULL(
+            (
+              SUM( IF( ( t.type IN ('Credit','Bonus') AND b.confirmations >= #{confirmations}) OR t.type = 'Credit_PPS', t.amount, 0 ) ) -
+              SUM( IF( t.type IN ('Debit_MP', 'Debit_AP'), t.amount, 0 ) ) -
+              SUM( IF( ( t.type IN ('Donation','Fee') AND b.confirmations >= #{confirmations}) OR ( t.type IN ('Donation_PPS', 'Fee_PPS', 'TXFee') ), t.amount, 0 ) )
+          ), 0
+        ) AS confirmed
+
+      FROM transactions AS t
+      LEFT JOIN blocks  AS b
+      ON t.block_id = b.id
+      LEFT JOIN user_settings AS a
+      ON t.account_id = a.account_id
+      LEFT JOIN  coin_addresses  AS ca
+      ON ca.account_id = a.account_id
+      WHERE t.archived = 0 AND ap_threshold > 0 AND ca.coin_address IS NOT NULL AND ca.coin_address != '' AND ca.currency = #{currency} AND ca.ap_threshold BETWEEN #{apThresholdMin} AND #{apThresholdMax}
+      GROUP BY t.account_id
+      HAVING confirmed > ap_threshold AND confirmed > #{txfeeAuto}
+      LIMIT #{limit};
+
+
+    </select>
+    <!--Integer insert(Transactions transactions);-->
+    <insert id="insert" parameterType="com.spring.xnpool.bmpos.tasks.bmpostasks.dao.domain.TransacTions" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (account_id, amount, block_id, type, coin_address, txid) VALUES (#{accountId}, #{amount}, #{blockId}, #{type}, #{coinAddress}, #{txid})
+    </insert>
+    <!--Integer update(DailyVO transactionVO)-->
+    <update id="update" >
+        UPDATE transactions AS t
+        LEFT JOIN blocks AS b
+        ON b.id = t.block_id
+        SET t.archived = 1
+        WHERE t.archived = 0
+        AND (
+        ( t.account_id = #{accountId} AND t.id &lt;= #{id} AND b.confirmations >= #{confirmed} )
+        OR ( t.account_id = #{accountId} AND t.id &lt;= #{id} AND b.confirmations = -1 )
+        OR ( t.account_id = #{accountId} AND t.id &lt;= #{id} AND t.type IN ( 'Credit_PPS', 'Donation_PPS', 'Fee_PPS', 'TXFee', 'Debit_MP', 'Debit_AP' ) )
+        )
+    </update>
+</mapper>

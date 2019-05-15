@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "../config/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Repository接口 -->
+<mapper namespace="com.xn.bmpos.api.bmposapi.domain.mapper.RecordMapper">
+
+    <select id="findCollectionAllRecord" resultType="com.xn.bmpos.api.bmposapi.domain.model.Record">
+        SELECT coin_address AS address,amount,TIMESTAMP,txid FROM transactions WHERE txid IS NOT NULL AND coin_address=#{address} ORDER BY id DESC
+    </select>
+
+    <select id="findPayRecord" resultType="com.xn.bmpos.api.bmposapi.domain.model.Record">
+        SELECT coin_address AS address,amount,TIMESTAMP,txid FROM transactions  WHERE txid IS NOT NULL AND DATE_SUB(CURDATE(), INTERVAL 3 DAY) &lt;= DATE(timestamp)  ORDER BY id DESC
+    </select>
+
+</mapper>
