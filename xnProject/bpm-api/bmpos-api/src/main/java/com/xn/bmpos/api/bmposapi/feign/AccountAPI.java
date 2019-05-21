@@ -22,9 +22,9 @@ public interface AccountAPI {
     JSONObject getNameByOldName(@RequestParam("oldName")String oldName, @RequestParam("coin") String coin);
 
     @RequestMapping(value = "/account/findUsersAndCoins", method = RequestMethod.GET)
-    JSONObject selectUsersAndCoins(@RequestParam("userId")Integer userId);
+    JSONObject selectUsersAndCoins();
 
 
     @RequestMapping(value = "/mill/selectGroup", method = RequestMethod.GET)
-    JSONObject selectGroup(@RequestParam("usersName") String usersName, @RequestParam("coin") String coin);
+    JSONObject selectGroup(@RequestParam("userId") Integer userId, @RequestParam("coin") String coin);
 }

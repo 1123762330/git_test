@@ -6,6 +6,7 @@ import com.xnpool.account.entity.User;
 import com.xnpool.account.mappers.RoleMapper;
 import com.xnpool.account.mappers.UserMaper;
 import com.xnpool.account.model.HttpResultTokenModel;
+import com.xnpool.account.model.UserModel;
 import com.xnpool.account.util.AgentUserKit;
 import com.xnpool.account.util.GetUserIPUtil;
 import com.xnpool.account.util.Tools;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 /**
  * user
@@ -47,7 +49,7 @@ public class UserService {
 
         //todo 添加历史记录表
         String result = AgentUserKit.getOsAndBrowserInfo(request);
-        System.out.println(result);
+        //System.out.println(result);
 
         loginHistroyService.insertLoginHistroy(user.getUserid(), loginIp, place, result);
 
@@ -173,7 +175,39 @@ public class UserService {
     }
 
     //修改用户邮寄地址
-    public int updateUserStreet(String username,String street){
-        return userMaper.updateUserStreetdByName(username,street);
+    public int updateUserStreet(String username, String street) {
+        return userMaper.updateUserStreetdByName(username, street);
+    }
+
+    public List<User> getUsers() {
+        return userMaper.getUsers();
+    }
+
+    public void insertUser(UserModel userModel) {
+        User user = new User();
+        Role role = addRoleByAdmin(userModel.getRolename(), userModel.getRoleremark());
+        user.setName(userModel.getUsername());
+        user.setMobile(userModel.getPhone());
+        user.setEmail(userModel.getEmail());
+        user.setRoleid(role.getRoleid());
+        String newPwd = Tools.getPassword(userModel.getUsername() + userModel.getPassword());
+        user.setPwd(newPwd);
+        user.setState(userModel.getState());
+        user.setCreatetime(new Date());
+        userMaper.insertUser(user);
+    }
+
+    private Role addRoleByAdmin(String roleName, String rewark) {
+        Role role = new Role();
+        role.setCreatetime(new Date());
+        //默认为普通用户
+        role.setRolename(roleName);
+        role.setRoleremark(rewark);
+        roleMapper.insertRole(role);
+        return role;
+    }
+
+    public User getUSerByID(int userid) {
+        return userMaper.getUSerByID(userid);
     }
 }

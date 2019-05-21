@@ -16,6 +16,6 @@
        plugins_id=#{pluginsId}
     ORDER BY
       time
-    LIMIT 5;
+    LIMIT 10;
   </select>
 </mapper>

@@ -1,18 +1,18 @@
 package com.xnpool.account.cotroller;
 
+import com.xnpool.account.entity.EmailSetting;
 import com.xnpool.account.entity.LoginHistroy;
 import com.xnpool.account.entity.Role;
 import com.xnpool.account.entity.User;
 import com.xnpool.account.model.*;
 import com.xnpool.account.service.ISaleAccountService;
 import com.xnpool.account.service.exception.ErrorCode;
+import com.xnpool.account.service.impl.EmailSettingService;
 import com.xnpool.account.service.impl.LoginHistroyService;
 import com.xnpool.account.service.impl.RoleService;
 import com.xnpool.account.service.impl.UserService;
-import com.xnpool.account.util.GetUserIPUtil;
-import com.xnpool.account.util.Resp;
+import com.xnpool.account.util.*;
 
-import com.xnpool.account.util.HttpTokenUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -40,6 +40,10 @@ public class LoginController extends BaskController {
     ISaleAccountService accountService;
     @Autowired
     private LoginHistroyService loginHistroyService;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private EmailSettingService emailSettingService;
 
     //todo 用户登录
     @PostMapping("/login")
@@ -57,10 +61,6 @@ public class LoginController extends BaskController {
             resultMap.put("username", httpResuletEntity.getUser_nickname());
             resultMap.put("email", httpResuletEntity.getUserEmail());
             resultMap.put("phone", httpResuletEntity.getUserPhone());
-            HttpSession session = request.getSession();
-            accountService.selectUsersId(httpResuletEntity.getUser_nickname());
-            Integer userId = 1;
-            session.setAttribute("userId",userId);
 
             //todo 需要在manager 数据库中添加或者修改用户
             User user = userService.insertOrUpdateUser(httpResuletEntity, place, request);
@@ -213,13 +213,41 @@ public class LoginController extends BaskController {
         map.put("wx",user.getWxnick());
         map.put("qq",user.getQq());
         map.put("email",user.getEmail());
-        map.put("password",user.getPwd());
         map.put("phone",user.getMobile());
+        map.put("address",user.getStreet());
         resp.setData(list);
         resp.setExt(map);
         resp.setStatus("200");
         resp.setMessage("请求成功");
         return resp;
+    }
+
+    @GetMapping("/sendEmail")
+    @ResponseBody
+    public Resp sendEmail(@RequestParam(value = "emailVerifi")String emailVerifi){
+        //获取邮箱配置
+        EmailSetting emailSetting = emailSettingService.findEmailSetting();
+        //生成验证码
+        String code = EmailUtil.createCode();
+        //发送邮件
+        EmailUtil.sendMail(emailVerifi, code, emailSetting);
+        //存入redis
+        boolean isTrue = redisUtil.hset(emailVerifi,emailVerifi, code, 300);
+        //判断是否发送成功
+       /* if(emailSetting == null || code == null || isTrue == false){
+            return new Resp("500","发送邮件失败");
+        }*/
+        return new Resp("200","发送邮件成功");
+    }
+
+    @GetMapping("/emailVerifi")
+    @ResponseBody
+    public Resp emailVerifi(@RequestParam(value = "emailVerifi")String emailVerifi,@RequestParam(value = "code")String code){
+        Object object = redisUtil.hget(emailVerifi,emailVerifi);
+        if(code.equals(String.valueOf(object))){
+            return new Resp("200","验证成功");
+        }
+        return new Resp("500","验证失败");
     }
 
 }

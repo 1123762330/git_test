@@ -54,7 +54,7 @@
 
     <!--查询所有矿机-->
     <select id="selectGroup" resultType="com.xnpool.account.entity.MillName">
-        SELECT account_name AS accountName,mill_group.id AS groupId,mill.name AS millName,mill.old_name AS oldName,mill_group.name AS groupName FROM mill
+        SELECT mill.id AS millId,account_name AS accountName,mill_group.id AS groupId,mill.name AS millName,mill.old_name AS oldName,mill_group.name AS groupName FROM mill
         JOIN mill_group ON mill.group_id = mill_group.id WHERE userId=#{userId} AND coin = #{coin};
     </select>
 
@@ -77,6 +77,11 @@
     </select>
     <!--String findNewName(String oldName);-->
     <select id="findNewName" resultType="String">
-        SELECT name from mill where old_name = #{oldName}
+        SELECT name from mill where old_name = #{oldName} AND coin = #{coin} LIMIT 1;
+    </select>
+
+    <!-- Integer selectUserId(Integer id);-->
+    <select id="selectUserId" resultType="Integer" >
+        SELECT user_id FROM sale_account WHERE NAME = (SELECT account_name FROM mill WHERE id= #{id});
     </select>
 </mapper>

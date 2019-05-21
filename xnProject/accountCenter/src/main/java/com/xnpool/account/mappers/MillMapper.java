@@ -56,7 +56,7 @@ public interface MillMapper {
     * @param groupIds
     * @return
     */
-   Integer delGroup(@Param("groupIds")List<Integer> groupIds);
+   Integer delGroup(@Param("groupIds")List<String> groupIds);
 
    /**
     * 查询所有矿机
@@ -90,5 +90,12 @@ public interface MillMapper {
     * @param oldName
     * @return
     */
-   String findNewName(String oldName);
+   String findNewName(@Param("oldName") String oldName,@Param("coin") String coin);
+
+   /**
+    * 用过id查询用户id
+    * @param id
+    * @return
+    */
+   Integer selectUserId(Integer id);
 }

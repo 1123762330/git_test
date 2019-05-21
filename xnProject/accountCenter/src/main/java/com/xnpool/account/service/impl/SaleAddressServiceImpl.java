@@ -3,6 +3,8 @@ package com.xnpool.account.service.impl;
 
 import com.xnpool.account.entity.SaleAccountVO;
 import com.xnpool.account.entity.SaleAddress;
+import com.xnpool.account.entity.SaleAddressAll;
+import com.xnpool.account.mappers.SaleAccountMapper;
 import com.xnpool.account.mappers.SaleAddressMapper;
 import com.xnpool.account.service.ISaleAddressService;
 import com.xnpool.account.service.exception.*;
@@ -17,8 +19,10 @@ import java.util.List;
 public class SaleAddressServiceImpl implements ISaleAddressService {
     @Autowired
     SaleAddressMapper saleAddressMapper;
+    @Autowired
+    SaleAccountMapper saleAccountMapper;
     @Override
-    public void add(Integer accountId,String currency,String coinAddress,String name) {
+    public void add(Integer accountId,String currency,String coinAddress) {
         //todo
         SaleAccountVO data = selectByCidAndCurrency(accountId,currency);
         if(data != null){
@@ -35,23 +39,30 @@ public class SaleAddressServiceImpl implements ISaleAddressService {
     }
 
     @Override
-    public void change(Integer id,String coinAddress,Integer userid) {
+    public void change(Integer id,String coinAddress,Integer userId) {
         SaleAccountVO data = selectById(id);
         if(data == null){
             throw new DataNotFoundException("币地址不存在!");
         }
-        if(data.getUserId()!=userid){
+        if(data.getUserId()!=userId){
             throw new NotActiveException("你无权修改地址!请登录!");
         }
         update(id,coinAddress,new Date());
     }
 
     @Override
-    public List<SaleAddress> getByAccountId(Integer accountId) {
-        List<SaleAddress> list = selectByAccountId(accountId);
-        if(list.size()==0||list==null){
-            throw new DataNotFoundException("还没有创建地址!");
+    public List<SaleAddress> getByAccountId(Integer accountId,Integer userId) {
+        List<Integer> selectAccountIds = saleAccountMapper.selectAccountIds(userId);
+        if(selectAccountIds.isEmpty()){
+            throw new DataNotFoundException("还没有创建子账号!");
         }
+        if(!selectAccountIds.contains(accountId)){
+            throw new NotActiveException("你没有权限查询!请登录");
+        }
+        List<SaleAddress> list = selectByAccountId(accountId);
+       /* if(list.size()==0||list==null){
+            throw new DataNotFoundException("还没有创建地址!");
+        }*/
         return list;
     }
 
@@ -65,26 +76,52 @@ public class SaleAddressServiceImpl implements ISaleAddressService {
     }
 
     @Override
-    public void dropByid(Integer id,Integer userid) {
+    public void dropByid(Integer id,Integer userId) {
         SaleAccountVO data = selectById(id);
         if(data == null){
             throw new DataNotFoundException("要删除的数据不存在!");
         }
-        if(data.getUserId()!= userid){
+        if(data.getUserId()!= userId){
             throw new NotActiveException("你无权删除地址!请登录!");
         }
         deleteByid(id);
     }
+    /**
+     * 查询钱包权限
+     * @return
+     */
+    @Override
+    public List<SaleAddressAll> findSaleAddress () {
+        return saleAddressMapper.findSaleAddress();
+    }
+
+    /**
+     * 修改钱包级别
+     * @param rank
+     */
+    @Override
+    public void updateWalletRank (Integer rank,Integer walletId) {
+        Integer rows = saleAddressMapper.updateWalletRank(rank,walletId);
+        if(rows != 1){
+            throw new UpdateException("修改钱包级别出现异常");
+        }
+    }
+
+    @Override
+    public SaleAddressAll selectWallet (Integer walletId) {
+        return saleAddressMapper.selectWallet(walletId);
+    }
+
     /**
      * 添加地址
      * @param saleAddress
      * @return
      */
     private void insert(SaleAddress saleAddress){
-       Integer rows = saleAddressMapper.insert(saleAddress);
-       if(rows !=1){
-           throw new InsertException("添加地址时出现未知错误!未能添加!");
-       }
+        Integer rows = saleAddressMapper.insert(saleAddress);
+        if(rows !=1){
+            throw new InsertException("添加地址时出现未知错误!未能添加!");
+        }
     }
 
     /**
@@ -145,6 +182,7 @@ public class SaleAddressServiceImpl implements ISaleAddressService {
         }
     }
     private SaleAccountVO selectByCidAndCurrency(Integer accountId,String coin){
-       return saleAddressMapper.selectByCidAndCurrency(accountId,coin);
+        return saleAddressMapper.selectByCidAndCurrency(accountId,coin);
     }
+
 }

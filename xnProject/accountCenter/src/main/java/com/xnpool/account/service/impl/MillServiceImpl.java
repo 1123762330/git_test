@@ -3,10 +3,7 @@ package com.xnpool.account.service.impl;
 import com.xnpool.account.entity.MillName;
 import com.xnpool.account.mappers.MillMapper;
 import com.xnpool.account.service.MillService;
-import com.xnpool.account.service.exception.DataExistException;
-import com.xnpool.account.service.exception.DataNotFoundException;
-import com.xnpool.account.service.exception.InsertException;
-import com.xnpool.account.service.exception.UpdateException;
+import com.xnpool.account.service.exception.*;
 import com.xnpool.account.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,7 @@ public class MillServiceImpl implements MillService {
                     continue;
                 }
                 insertMill(accountName,millName,millName,coin);
-                System.err.println(accountName+" "+millName);
+                log.info(accountName+" "+millName);
 
             }
         }
@@ -45,8 +42,8 @@ public class MillServiceImpl implements MillService {
     }
 
     @Override
-    public void changeName(String name, String oldName, String accountName) {
-        String newName = millMapper.findNewName(oldName);
+    public void changeName(String name, String oldName, String accountName,String coin) {
+        String newName = millMapper.findNewName(oldName,coin);
         if (newName!=null){
             if (newName.equals(name)){
                 throw new DataExistException("矿机名已存在!");
@@ -56,14 +53,17 @@ public class MillServiceImpl implements MillService {
     }
 
     @Override
-    public void group(String accountName, Integer groupId,List indexs) {
-        List<Integer> list = findIdByUser(accountName);
-        boolean result = list.containsAll(indexs);
-        if(result){
-            updateGroup(indexs, groupId);
-        }else {
-           throw new DataNotFoundException("你无分组权限,请登录在分组!");
+    public void group(String accountName, Integer groupId,List indexs,Integer userId) {
+        Object id = indexs.get(0);
+        Integer data = millMapper.selectUserId(Integer.valueOf(id.toString()));
+        if(data==null){
+            throw new DataNotFoundException("你没有权限移动分组，或为登录");
         }
+        if(data!=userId){
+            throw new NotActiveException("你没有权限移动分组");
+        }
+        //通过id查询子账户名
+        updateGroup(indexs, groupId);
     }
     /**
      * 分组
@@ -125,10 +125,14 @@ public class MillServiceImpl implements MillService {
      * @param groupIds
      */
     @Override
-    public void delGroup(List<Integer> groupIds) {
-        Integer rows = millMapper.delGroup(groupIds);
-        if(rows < 1){
-            throw new UpdateException("删除分组失败!");
+    public void delGroup(List<String> groupIds,Integer userId) {
+        Integer id = Integer.valueOf(groupIds.get(0));
+        Integer integer = millMapper.selectUserId(id);
+        if(userId==integer){
+            Integer rows = millMapper.delGroup(groupIds);
+            if(rows < 1){
+                throw new UpdateException("删除分组失败!");
+            }
         }
     }
 
@@ -165,4 +169,11 @@ public class MillServiceImpl implements MillService {
     public List<String> findGroupName(Integer userId) {
         return millMapper.findGroupName(userId);
     }
+
+    @Override
+    public String findNewName(String oldName,String coin) {
+        return millMapper.findNewName(oldName,coin);
+    }
+
+
 }

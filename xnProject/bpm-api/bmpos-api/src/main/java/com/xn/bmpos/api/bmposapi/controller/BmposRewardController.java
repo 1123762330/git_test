@@ -1,7 +1,6 @@
 package com.xn.bmpos.api.bmposapi.controller;
 
 import com.xn.bmpos.api.bmposapi.common.http.HttpAPIService;
-import com.xn.bmpos.api.bmposapi.domain.dao.Machine;
 import com.xn.bmpos.api.bmposapi.domain.model.RewardModel;
 import com.xn.bmpos.api.bmposapi.feign.RewadAPI;
 import com.xn.bmpos.api.bmposapi.tool.Resp;
@@ -10,11 +9,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import sun.net.httpserver.HttpServerImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;

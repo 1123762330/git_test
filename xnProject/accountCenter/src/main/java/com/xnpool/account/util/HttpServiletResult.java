@@ -2,10 +2,7 @@ package com.xnpool.account.util;
 
 import com.xnpool.account.model.*;
 import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.POST;
-import retrofit2.http.Query;
+import retrofit2.http.*;
 
 public interface HttpServiletResult {
 
@@ -21,8 +18,11 @@ public interface HttpServiletResult {
     @GET("/sso/oauth/check_token")
     Call<HttpResuletCheakTokenModel> tokenVerify(@Header("Authorization") String head, @Query("token") String token);
 
+    @FormUrlEncoded
     @POST("/sso/sign")
-    Call<HttpResultJsonModel> getSign(@Query(value = "username") String username, @Query(value = "phone") String phone, @Query(value = "password") String password);
+    Call<HttpResultJsonModel> getSign(@Field(value = "username") String username, @Field(value = "phone") String phone, @Field(value = "password") String password);
+
+
 
     @POST("/sso/updateUser")
     Call<HttpResultJsonModel> getUpdateUser(@Query(value = "userModel") UpdateUserModel userModel);

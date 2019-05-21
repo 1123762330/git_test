@@ -9,8 +9,8 @@ import java.util.Date;
 public class PluginsState implements Serializable {
     private static final long serialVersionUID = -5505995389649628499L;
     private Integer id;
-    private Integer success;
-    private Integer failed;
+    private Integer success = 0;
+    private Integer failed = 0;
     private String pluginsId;
     private Date time;
 

@@ -173,4 +173,9 @@ public class ShareServiceImpl implements ShareService {
         return sharesMapper.findOneHourMill(beforeTime,updateTime);
     }
 
+    @Override
+    public List<String> getOnlineMill(Integer startId, Integer lastId) {
+        return sharesMapper.getOnlineMill(startId, lastId);
+    }
+
 }

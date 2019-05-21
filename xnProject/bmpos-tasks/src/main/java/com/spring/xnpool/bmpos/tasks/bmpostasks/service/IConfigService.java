@@ -3,6 +3,7 @@ package com.spring.xnpool.bmpos.tasks.bmpostasks.service;
 import com.spring.xnpool.bmpos.tasks.bmpostasks.SettingAPI.Config;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IConfigService {
     /**
@@ -34,4 +35,10 @@ public interface IConfigService {
     void delete(Integer id);
 
     Config findByid(Integer id);
+
+    /**
+     * 得到默认配置
+     * @return
+     */
+    List<Config> getDefaultConfig();
 }

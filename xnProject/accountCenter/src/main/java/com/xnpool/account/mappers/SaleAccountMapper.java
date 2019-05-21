@@ -1,7 +1,6 @@
 package com.xnpool.account.mappers;
 
-import com.xnpool.account.entity.SaleAccount;
-import com.xnpool.account.entity.UsersAndCoins;
+import com.xnpool.account.entity.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +71,7 @@ public interface SaleAccountMapper {
      * @param address
      * @return
      */
-    Integer findDataByAddress(@Param("coin") String coin, @Param("address") String address);
+    IsAccount findDataByAddress(@Param("coin") String coin, @Param("address") String address);
 
     /**
      * 通过用户名查询用户Id
@@ -80,4 +79,25 @@ public interface SaleAccountMapper {
      * @return
      */
     Integer selectUsersId (String usersName);
+
+    /**
+     * 通过用户id查询子账户id
+     * @param userId
+     * @return
+     */
+    List<Integer> selectAccountIds(Integer userId);
+
+    /**
+     * 查询子账户名及地址
+     * @param userId
+     * @return
+     */
+    List<UsersAndCoins> selectAccountName(Integer userId);
+
+    /**
+     * 通过子账户id查询地址及币种
+     * @param accountId
+     * @return
+     */
+    List<SaleAddress> selectAddressAndCoinByAccountId(Integer accountId);
 }

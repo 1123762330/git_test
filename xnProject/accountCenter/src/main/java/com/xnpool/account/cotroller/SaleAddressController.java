@@ -21,8 +21,8 @@ public class SaleAddressController extends BaskController {
      * @return
      */
     @PostMapping("/add")
-    public ResponseResult<Void> add(Integer accountId, String currency, String coinAddress,String name){
-        saleAddressService.add(accountId,currency,coinAddress,name);
+    public ResponseResult<Void> addAddress(@RequestParam("accountId") Integer accountId, @RequestParam("currency") String currency, @RequestParam("coinAddress") String coinAddress){
+        saleAddressService.add(accountId,currency,coinAddress);
         return new ResponseResult<>(SUCCESS);
     }
 
@@ -32,8 +32,7 @@ public class SaleAddressController extends BaskController {
      * @return
      */
     @PostMapping("/change")
-    public ResponseResult<Void> change(Integer id, String coinAddress, HttpSession session){
-        Integer userId = getUidfromSession(session);
+    public ResponseResult<Void> changeAdress(Integer id, String coinAddress,Integer userId){
         saleAddressService.change(id,coinAddress,userId);
         return new ResponseResult<>(SUCCESS);
     }
@@ -43,8 +42,8 @@ public class SaleAddressController extends BaskController {
      * @return
      */
     @GetMapping("/get_aid")
-    public ResponseResult<List<SaleAddress>> getByAccountId(Integer accountId){
-        List<SaleAddress> data = saleAddressService.getByAccountId(accountId);
+    public ResponseResult<List<SaleAddress>> getByAccountId(Integer accountId,Integer userId){
+        List<SaleAddress> data = saleAddressService.getByAccountId(accountId,userId);
         return new ResponseResult<>(SUCCESS,data);
     }
     /**
@@ -64,8 +63,7 @@ public class SaleAddressController extends BaskController {
      * @return
      */
     @PostMapping("/drop")
-    public ResponseResult<Void> dropByid(Integer id,  HttpSession session){
-        Integer userId = getUidfromSession(session);
+    public ResponseResult<Void> dropByid(Integer id,Integer userId){
         saleAddressService.dropByid(id,userId);
         return new ResponseResult<>(SUCCESS);
     }

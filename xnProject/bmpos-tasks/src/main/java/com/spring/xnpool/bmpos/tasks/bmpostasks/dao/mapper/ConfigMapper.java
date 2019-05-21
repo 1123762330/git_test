@@ -54,4 +54,5 @@ public interface ConfigMapper {
     Integer delete(Integer id);
 
     Config findByid(Integer id);
+
 }

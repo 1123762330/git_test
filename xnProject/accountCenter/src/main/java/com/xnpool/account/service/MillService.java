@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface MillService {
     void setMill(String coin);
-    void changeName(String name,String oldName,String user);
-    void group(String user,Integer groupId,List indexs);
+    void changeName(String name,String oldName,String user,String coin);
+    void group(String user,Integer groupId,List indexs,Integer userId);
 
     void addGroup(String groupName,Integer userId);
-    void delGroup(List<Integer> groupIds);
+    void delGroup(List<String> groupIds,Integer userId);
 
     List<MillName> selectGroup(Integer userId,String coin);
 
@@ -25,4 +25,12 @@ public interface MillService {
      * @return
      */
     List<String> findGroupName(Integer userId);
+
+
+    /**
+     * 通过原名查新名
+     * @param oldName
+     * @return
+     */
+    String findNewName(String oldName,String coin);
 }

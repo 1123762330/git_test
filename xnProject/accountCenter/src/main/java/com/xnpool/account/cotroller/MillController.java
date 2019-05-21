@@ -32,8 +32,8 @@ public class MillController extends BaskController {
      * @return
      */
     @GetMapping("/change")
-    public ResponseResult<Void> changeName(String name, String oldName, String accountName) {
-        millService.changeName(name, oldName, accountName);
+    public ResponseResult<Void> changeName(String name, String oldName, String accountName,String coin) {
+        millService.changeName(name, oldName, accountName,coin);
         return new ResponseResult<>(SUCCESS);
     }
 
@@ -45,11 +45,11 @@ public class MillController extends BaskController {
      * @return
      */
     @RequestMapping(value = "/group", method = RequestMethod.POST, produces = "application/json")
-    public ResponseResult<Void> group(String accountName, Integer groupId, @RequestBody List<Integer> indexs) {
+    public ResponseResult<Void> group(String accountName, Integer groupId, @RequestBody List<String> indexs,@RequestParam("userId") Integer userId) {
         if (indexs == null || indexs.size() <= 0) {
             return new ResponseResult(500, "集合参数为空");
         }
-        millService.group(accountName, groupId, indexs);
+        millService.group(accountName, groupId, indexs,userId);
         return new ResponseResult<>(SUCCESS);
     }
 
@@ -60,10 +60,7 @@ public class MillController extends BaskController {
      * @return
      */
     @RequestMapping("/addGroup")
-    public ResponseResult<Void> addGroup(String groupName,HttpSession session) {
-        //通过用户名拿到UserId
-        //Integer userId=saleAccountService.selectUsersId(usersName);
-        Integer userId = getUidfromSession(session);
+    public ResponseResult<Void> addGroup(String groupName,Integer userId) {
         List<String> groupNameList = millService.findGroupName(userId);
         if(groupNameList.contains(groupName)){
             return new ResponseResult<>(400,"分组名重复");
@@ -77,8 +74,8 @@ public class MillController extends BaskController {
      * @return
      */
     @RequestMapping(value = "/delGroup", method = RequestMethod.POST, produces = "application/json")
-    public ResponseResult<Void> delGroup(@RequestBody List<Integer> groupIds) {
-        millService.delGroup(groupIds);
+    public ResponseResult<Void> delGroup(@RequestBody List<String> groupIds,@RequestParam("userId")Integer userId) {
+        millService.delGroup(groupIds,userId);
         return new ResponseResult<>(SUCCESS,"删除成功");
     }
 
@@ -88,10 +85,8 @@ public class MillController extends BaskController {
      * @return
      */
     @RequestMapping("selectGroup")
-    public ResponseResult<List<MillName>> selectGroup(HttpSession session,String coin) {
-        //通过用户名拿到UserId
-        Integer userId = getUidfromSession(session);
-        System.err.println(userId);
+    public ResponseResult<List<MillName>> selectGroup(Integer userId,String coin) {
+        //System.err.println(userId);
         List<MillName> millNames = millService.selectGroup(userId,coin);
         return new ResponseResult<>(SUCCESS,millNames);
     }
@@ -114,12 +109,22 @@ public class MillController extends BaskController {
      * @return
      */
     @GetMapping("get_name")
-    public ResponseResult<String> getNameByOldName(@RequestParam("oldName") String oldName,@RequestParam("coin") String coin){
+    public ResponseResult<MillName> getNameByOldName(@RequestParam("oldName") String oldName,@RequestParam("coin") String coin){
          MillName name = millService.getNameByOldName(oldName,coin);
-         ResponseResult result = new ResponseResult();
-         result.setState(SUCCESS);
-         result.setData(name);
-        return result;
+        return new ResponseResult<>(SUCCESS,name);
     }
 
+    /**
+     * 得到更改名
+     * @param oldName
+     * @return
+     */
+    @GetMapping("get_new_name")
+    public ResponseResult<String>findNewName(@RequestParam("oldName") String oldName,@RequestParam("coin") String coin) {
+        String newName = millService.findNewName(oldName,coin);
+        ResponseResult result = new ResponseResult();
+        result.setState(SUCCESS);
+        result.setData(newName);
+        return result;
+    }
 }

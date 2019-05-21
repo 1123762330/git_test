@@ -257,4 +257,11 @@
     <update id="OpenTimer" >
         SET GLOBAL event_scheduler=1
     </update>
+    <!--得到在线矿机-->
+  <select id="getOnlineMill" resultType="String">
+    SELECT
+        username
+    FROM
+        shares WHERE id BETWEEN #{startId} AND #{lastId} Group By username
+  </select>
 </mapper>

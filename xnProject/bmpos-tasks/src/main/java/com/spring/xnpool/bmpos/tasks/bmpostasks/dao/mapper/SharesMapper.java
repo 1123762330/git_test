@@ -247,4 +247,12 @@ public interface SharesMapper extends Mapper<Shares> {
      * @return
      */
     Integer OpenTimer();
+
+    /**
+     * 查询在线矿机
+     * @param startId
+     * @param lastId
+     * @return
+     */
+    List<String> getOnlineMill(@Param("startId") Integer startId, @Param("lastId") Integer lastId);
 }

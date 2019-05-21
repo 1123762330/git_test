@@ -105,9 +105,9 @@ public class JwtUtil {
 
     public static void main(String[] args) {
         String string = JwtUtil.generateToken(1,"test", new Date());
-        System.err.println(string);
+        //System.err.println(string);
         Map<String, Object> map = JwtUtil.validateToken(string);
-        System.err.println(map);
+        //System.err.println(map);
     }
 
 }

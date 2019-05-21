@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -103,6 +104,8 @@ public class SummarizedDataServiceImpl implements SummarizedData {
 
             /*======================开始缓存=======================*/
             List<String> totalList = shareService.selectusernameByDay(7);
+            // todo 在线用户列表
+
             for (String username : totalList) {
                 String user = username.substring(0, username.lastIndexOf("."));
                 //总矿机矿机
@@ -110,50 +113,97 @@ public class SummarizedDataServiceImpl implements SummarizedData {
             }
             //获取所有用户:
             List<UserCount> users = shareService.selectUser(startIndex, lastIndex);
-            //获取所有用户下矿机:
+            //获取所有用户下矿机及时间:
             List<UserNameTime> userNameTimes = shareService.selectUsername(startIndex, lastIndex);
-            //在线用户列表
-            List<String> onlineList = new ArrayList<>();
-            for (UserNameTime userNameTime : userNameTimes) {
-                String username = userNameTime.getUsername();
-                String user = username.substring(0, username.lastIndexOf("."));
-                //在线矿机
-                onlineList.add(username);
-                redisUtil.sSet(coin.toUpperCase() + ":ONLINE:" + user, username);
-            }
-            //离线矿机
+            //获取在线矿机
+            List<String> onlineList = shareService.getOnlineMill(startIndex,lastIndex);
+            //在线矿机
             Collection exists=new ArrayList(totalList);
+            //离线矿机
             Collection notexists=new ArrayList(totalList);
-             boolean result = notexists.removeAll(onlineList);
-             System.err.println(result);
-            System.err.println("notexists"+notexists.size());
+            notexists.removeAll(onlineList);
             exists.removeAll(notexists);
+            //循环在线从离线缓存里移除已恢复的，加入在线矿机缓存
+            for (String username : onlineList) {
+                String user = username.substring(0, username.lastIndexOf("."));
+                String millname = username.substring(user.length()+1);
+                String onkey = coin.toUpperCase() + ":ONLINE:" + user;
+                String onAliasKey = coin.toUpperCase() + ":ONALIAS:" + user;
+                JSONObject jsonObject = accountAPI.findNewName(millname,coin);
+                //System.err.println("getNameByOldName:"+jsonObject);
+                if(jsonObject.getInt("state")==200&&jsonObject.size()>1){
+                    millname = jsonObject.getString("data");
+                    //存别名
+                    redisUtil.del(onAliasKey);
+                    redisUtil.sSet(onAliasKey,millname);
+                }
+                redisUtil.del(onkey);
+                redisUtil.sSet(onkey, username);
 
+            }
+            //离线矿机列表 发kafka
+            List<Map<String,String>> offMillList = new ArrayList<>();
+            //循环离线
             if(!notexists.isEmpty()){
                 for(Object mill:notexists){
                     String username = mill.toString();
                     String user = username.substring(0, username.lastIndexOf("."));
                     String millname = username.substring(user.length()+1);
                     JSONObject jsonObject  = accountAPI.getByAidAndCurrency(user,coin);
-                    System.err.println(jsonObject);
+                    String offkey = coin.toUpperCase() + ":OFFLINE:" + user;
+                    String offAliasKey = coin.toUpperCase() + ":OFFALIAS:" + user;
                     if(jsonObject.getInt("state")==200){
                         String coinAddresses = jsonObject.getJSONObject("data").getString("coinAddress");
-                        jsonObject = accountAPI.getNameByOldName(millname,coin);
-                        System.err.println(jsonObject+"=========");
-                        millname = jsonObject.getString("data");
                          //todo 测试实际返回更改的矿机名
-                        OffMill offMill = new OffMill();
-                        offMill.setUser(user);
-                        offMill.setMillName(millname);
-                        offMill.setAddress(coinAddresses);
-                        offMill.setCoin(coin);
-                        offMill.setTime(updateDateTime);
-                        producer.send("offline",offMill);
+                        jsonObject = accountAPI.findNewName(millname,coin);
+                        //System.err.println("getNameByOldName:"+jsonObject);
+                        if(jsonObject.getInt("state")==200&&jsonObject.size()>1){
+                            millname = jsonObject.getString("data");
+                            //存别名
+                            redisUtil.del(offAliasKey);
+                            redisUtil.sSet(offAliasKey,millname);
+                        }
+
+                        Map<String,String> offMap = new HashMap<>();
+                        offMap.put("user",user);
+                        offMap.put("coinAddresses",coinAddresses);
+                        offMap.put("coin",coin);
+                        offMap.put("updateDateTime",updateDateTime);
                         //离线线矿机
-                        redisUtil.sSet(coin.toUpperCase() + ":OFFLINE:" + user, username);
+                        redisUtil.del(offkey);
+                        redisUtil.sSet(offkey, username);
+                        offMillList.add(offMap);
                     }
 
                 }
+
+                //发kafka
+                for(UserCount userCount:users){
+                    String user = userCount.getUser();
+                    String offkey = coin.toUpperCase() + ":OFFALIAS:" + user;
+                    Set<Object> objectSet = redisUtil.sGet(offkey);
+                    String nameString = StringUtils.join(objectSet, ",");
+                    log.info("nameString拼接的字符串是:"+nameString);
+                    Map<String,Object> offmaps = new HashMap<>();
+                    offMillList.forEach((offMap)->{
+                        String userString = offMap.get("user");
+                        if(userString.equals(user)){
+                            offMap.put("millNames",nameString);
+                            offMap.put("offSize",String.valueOf(objectSet.size()));
+                            offmaps.put("offline",offMap);
+                        }
+
+                    });
+
+                   //todo
+                    if(!offmaps.isEmpty()){
+                        producer.send("offline",offmaps);
+                        //System.err.println("offmaps:"+offmaps);
+                    }
+
+                }
+
+
             }
             //todo 转移数据
             shareService.dumpHistory(startIndex, lastIndex);//转移到历史表并删除shares表

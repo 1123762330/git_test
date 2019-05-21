@@ -1,14 +1,19 @@
 package com.xnpool.account.cotroller;
 
+import com.xnpool.account.entity.IsAccount;
 import com.xnpool.account.entity.SaleAccount;
 import com.xnpool.account.entity.UsersAndCoins;
+import com.xnpool.account.mappers.SaleAccountMapper;
 import com.xnpool.account.service.ISaleAccountService;
 import com.xnpool.account.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/account")
@@ -31,11 +36,18 @@ public class SaleAccountController extends BaskController {
     }
     /**
      * 新增账户
-     * @param saleAccount
+     * @param
      * @return
      */
     @PostMapping("/add")
-    public ResponseResult<Void> add(SaleAccount saleAccount){
+    public ResponseResult<Void> add(@RequestParam("name") String name, @RequestParam("remarkName") String remarkName,@RequestParam(value = "password",required=false) String password,Integer userId){
+        SaleAccount saleAccount = new SaleAccount();
+        saleAccount.setName(name);
+        saleAccount.setRemarkName(remarkName);
+        if(password==null){
+            saleAccount.setPassword("123456");
+        }
+        saleAccount.setUserId(userId);
         saleAccountService.add(saleAccount);
         return new ResponseResult<>(SUCCESS);
     }
@@ -47,7 +59,7 @@ public class SaleAccountController extends BaskController {
     @PostMapping("/change")
     public ResponseResult<Void> change(SaleAccount saleAccount){
         saleAccountService.change(saleAccount);
-        return new ResponseResult<>(SUCCESS,"您确定要修改吗?修改后将无法找到任何记录!");
+        return new ResponseResult<>(SUCCESS);
     }
     /**
      * 查询用户所有子账户列表
@@ -55,8 +67,7 @@ public class SaleAccountController extends BaskController {
      * @return
      */
     @PostMapping("/get")
-    public ResponseResult<List<SaleAccount>> getByUid(HttpSession session){
-        Integer userId = getUidfromSession(session);
+    public ResponseResult<List<SaleAccount>> getByUid(@RequestParam("userId") Integer userId){
         List<SaleAccount> data = saleAccountService.getByUid(userId);
         return new ResponseResult<>(SUCCESS,data);
     }
@@ -66,8 +77,7 @@ public class SaleAccountController extends BaskController {
      * @return
      */
     @PostMapping("/delete")
-    public ResponseResult<Void> dropByid(Integer id,HttpSession session){
-        Integer userId = getUidfromSession(session);
+    public ResponseResult<Void> dropByidAC(Integer id,Integer userId){
         saleAccountService.dropByid(id,userId);
         return new ResponseResult<>(SUCCESS);
     }
@@ -77,9 +87,7 @@ public class SaleAccountController extends BaskController {
      * @return
      */
     @RequestMapping("/findUsersAndCoins")
-    public ResponseResult<List<UsersAndCoins>>  selectUsersAndCoins(HttpSession session) {
-        //Integer userId = getUidfromSession(session);
-        Integer userId=1;
+    public ResponseResult<List<UsersAndCoins>>  selectUsersAndCoins(Integer userId) {
         List<UsersAndCoins> usersAndCoinsList = saleAccountService.selectUsersAndCoins(userId);
         return new ResponseResult<>(SUCCESS,usersAndCoinsList);
     }
@@ -90,10 +98,10 @@ public class SaleAccountController extends BaskController {
      * @return
      */
     @GetMapping("/findDataByAddress")
-    public ResponseResult<Integer> findDataByAddress(@RequestParam("coin") String coin,@RequestParam("address") String address) {
-        Integer userId = saleAccountService.findDataByAddress(coin, address);
-        
-        return new ResponseResult<>(SUCCESS,userId);
+    public ResponseResult<IsAccount> findDataByAddress(@RequestParam("coin") String coin,@RequestParam("address") String address) {
+        IsAccount isAccount = saleAccountService.findDataByAddress(coin, address);
+
+        return new ResponseResult<>(SUCCESS,isAccount);
     }
 
     /**
@@ -107,5 +115,14 @@ public class SaleAccountController extends BaskController {
         return new ResponseResult<>(SUCCESS,userId);
     }
 
-
+    /**
+     * 查询子账户
+     * @param userId
+     * @return
+     */
+    @GetMapping("/get_account_name")
+      public ResponseResult<List<UsersAndCoins>> selectAccountName(Integer userId){
+        List<UsersAndCoins> usersAndCoins = saleAccountService.selectAccountName(userId);
+        return new ResponseResult<>(SUCCESS,usersAndCoins);
+      }
 }

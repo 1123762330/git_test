@@ -1,3 +1,14 @@
 xnProject/accountCenter/.idea/
 xnProject/bpm-api/bmpos-api/.idea/
 xnProject/managerCenter/bmpos-manager/.idea/
+xnProject/bmpos-console/bmpos-console/.idea/
+xnProject/bmpos-console/bmpos-console/target/
+xnProject/bmpos-manager/.idea/
+xnProject/bmpos-manager/target/
+xnProject/bpm-api/bmpos-api/target/
+xnProject/bpm-userlist-api/.gitignore
+xnProject/bpm-worker-events/.gitignore
+xnProject/bpm-worker-events/src/test/java/com/xn/bpmworkerevents/BpmWorkerEventsApplicationTests.java
+xnProject/bmpos-tasks/.gitignore
+xnProject/bmpos-manager/bmpos-manager.iml
+xnProject/bmpos-console/bmpos-console/bmpos-console.iml

@@ -2,12 +2,16 @@ package com.xnpool.account.service;
 
 
 
+import com.xnpool.account.entity.IsAccount;
 import com.xnpool.account.entity.SaleAccount;
+import com.xnpool.account.entity.SaleAddressAll;
 import com.xnpool.account.entity.UsersAndCoins;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface ISaleAccountService {
     /**
      * 根据地址和币种获取用户名
@@ -53,7 +57,7 @@ public interface ISaleAccountService {
      * @param address
      * @return
      */
-    Integer findDataByAddress(String coin,String address);
+    IsAccount findDataByAddress(String coin, String address);
 
     /**
      * 通过用户名查询用户Id
@@ -61,4 +65,12 @@ public interface ISaleAccountService {
      * @return
      */
     Integer selectUsersId (String usersName);
+
+
+    /**
+     * 查询子账户名及地址
+     * @param userId
+     * @return
+     */
+    List<UsersAndCoins> selectAccountName(Integer userId);
 }

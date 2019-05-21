@@ -1,26 +1,29 @@
 package com.xnpool.account.service.impl;
 
 
-import com.xnpool.account.entity.SaleAccount;
-import com.xnpool.account.entity.SaleAddress;
-import com.xnpool.account.entity.UsersAndCoins;
+import com.xnpool.account.entity.*;
 import com.xnpool.account.mappers.SaleAccountMapper;
 import com.xnpool.account.service.ISaleAccountService;
 import com.xnpool.account.service.ISaleAddressService;
 import com.xnpool.account.service.exception.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SaleAccountServiceImpl implements ISaleAccountService {
     @Autowired
     SaleAccountMapper saleAccountMapper;
     @Autowired
     ISaleAddressService saleAddressService;
 
+    private SimpleDateFormat simpleDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//转换年月日
     @Override
     public String getUsernameByCoinAndAddress(String coin, String address) {
         return saleAccountMapper.getUsernameByCoinAndAddress(coin,address);
@@ -42,10 +45,15 @@ public class SaleAccountServiceImpl implements ISaleAccountService {
         if(data == null){
             throw new DataNotFoundException("该子账户或已经删除!");
         }
-        if(saleAccount.getUserId()!=data.getUserId()){
+        int userId = saleAccount.getUserId();
+        int userId1 = data.getUserId();
+        log.info(userId+" "+userId1);
+        if(userId != userId1){
             throw new NotActiveException("你无权修改子账户!请登录!");
         }
-        saleAccount.setUpdatedAt(new Date());
+        Date date = new Date();
+        String format = simpleDateTime.format(date);
+        saleAccount.setUpdatedAt(format);
         update(saleAccount);
     }
 
@@ -67,12 +75,97 @@ public class SaleAccountServiceImpl implements ISaleAccountService {
         if(data.getUserId()!=userId){
             throw new NotActiveException("你无权删除子账户!请登录!");
         }
-        List<SaleAddress> data1  = saleAddressService.getByAccountId(id);
+        List<SaleAddress> data1  = saleAddressService.getByAccountId(id,userId);
         if(!data1.isEmpty()){
             throw new DataExistException("请先删除该账户下的所有地址!子账户名:"+data.getName());
         }
         deleteByid(id);
     }
+
+    /**
+     * 通过用户查询子账号列表和对应的币种列表
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<UsersAndCoins> selectUsersAndCoins (Integer userId) {
+        return saleAccountMapper.selectUsersAndCoins(userId);
+    }
+
+    /**
+     *通过传入的币种和钱包地址判断有没有相应的数据
+     * @param coin
+     * @param address
+     * @return
+     */
+    @Override
+    public IsAccount findDataByAddress (String coin, String address) {
+        return saleAccountMapper.findDataByAddress(coin,address);
+    }
+    /**
+     * 通过用户名查询用户Id
+     * @param usersName
+     * @return
+     */
+    @Override
+    public Integer selectUsersId (String usersName) {
+        return saleAccountMapper.selectUsersId(usersName);
+    }
+
+    @Override
+    public List<UsersAndCoins> selectAccountName(Integer userId) {
+        List<UsersAndCoins> list = saleAccountMapper.selectAccountName(userId);
+        List<UsersAndCoins> dateList = new ArrayList<>();
+        for(UsersAndCoins usersAndCoins:list){
+            //得到子账户id
+            Integer accountId = usersAndCoins.getAccountId();
+            //创建存储对象
+
+            //循环地址
+            List<SaleAddress> saleAddress = selectAddressAndCoinByAccountId(accountId);
+            if(saleAddress.isEmpty()){
+                UsersAndCoins data = new UsersAndCoins();
+                data.setAccountId(accountId);
+                data.setName(usersAndCoins.getName());
+                String remarkName = usersAndCoins.getRemarkName();
+                if(remarkName==null){
+                    data.setRemarkName("");
+                }else {
+                    data.setRemarkName(remarkName);
+
+                }
+                data.setId(-1);
+                data.setCoinAddress("还没有创建地址");
+                data.setCurrency("无币种");
+                dateList.add(data);
+            }else {
+                for(SaleAddress address:saleAddress){
+                    UsersAndCoins data = new UsersAndCoins();
+                    data.setAccountId(accountId);
+                    data.setName(usersAndCoins.getName());
+                    String remarkName = usersAndCoins.getRemarkName();
+                    if(remarkName==null){
+                        data.setRemarkName("");
+                    }else {
+                        data.setRemarkName(remarkName);
+                    }
+                    data.setId(address.getId());
+                    data.setCoinAddress(address.getCoinAddress());
+                    data.setCurrency(address.getCurrency());
+                    dateList.add(data);
+                }
+            }
+
+
+        }
+        return dateList;
+    }
+
+
+    private List<SaleAddress> selectAddressAndCoinByAccountId(Integer accountId){
+        return saleAccountMapper.selectAddressAndCoinByAccountId(accountId);
+    }
+
 
     /**
      * 新增账户
@@ -135,33 +228,4 @@ public class SaleAccountServiceImpl implements ISaleAccountService {
         }
     }
 
-    /**
-     * 通过用户查询子账号列表和对应的币种列表
-     * @param userId
-     * @return
-     */
-    @Override
-    public List<UsersAndCoins> selectUsersAndCoins (Integer userId) {
-        return saleAccountMapper.selectUsersAndCoins(userId);
-    }
-
-    /**
-     *通过传入的币种和钱包地址判断有没有相应的数据
-     * @param coin
-     * @param address
-     * @return
-     */
-    @Override
-    public Integer findDataByAddress (String coin, String address) {
-        return saleAccountMapper.findDataByAddress(coin,address);
-    }
-    /**
-     * 通过用户名查询用户Id
-     * @param usersName
-     * @return
-     */
-    @Override
-    public Integer selectUsersId (String usersName) {
-        return saleAccountMapper.selectUsersId(usersName);
-    }
 }

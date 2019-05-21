@@ -1,0 +1,58 @@
+server:
+  port: 8990
+---
+spring:
+  application:
+    name: bmpos-console
+  main:
+    allow-bean-definition-overriding: true
+---
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    registryFetchIntervalSeconds: 5
+    service-url:
+      defaultZone: http://192.168.0.155:9601/eureka/
+---
+spring:
+    datasource:
+        name: mysql_test
+        type: com.alibaba.druid.pool.DruidDataSource
+        druid:
+          filters: stat
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.0.157:3306/bpos-manager?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+          username: root
+          password: root123
+          initial-size: 1
+          min-idle: 1
+          max-active: 20
+          max-wait: 60000
+          time-between-eviction-runs-millis: 60000
+          min-evictable-idle-time-millis: 300000
+          validation-query: SELECT 'x'
+          test-while-idle: true
+          test-on-borrow: false
+          test-on-return: false
+          pool-prepared-statements: false
+          max-pool-prepared-statement-per-connection-size: 20
+---
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  typeAliasesPackage:  com.xn.bmpos.api.bmposapi.domain.dao
+  global-config:
+    db-config:
+      id-type: AUTO
+      field-strategy: not_empty
+      column-underline: true
+      #capital-mode: true
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      db-type: mysql
+    refresh: true
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false

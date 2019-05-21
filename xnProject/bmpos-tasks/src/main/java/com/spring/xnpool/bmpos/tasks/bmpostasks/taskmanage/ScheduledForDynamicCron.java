@@ -105,8 +105,8 @@ public class ScheduledForDynamicCron implements SchedulingConfigurer, Applicatio
                 pmap = readPmap();
             }
             //todo 测试
-            //JSONObject dataByAddress = accountAPI.findDataByAddress("ltc","LSCDYttk1o34LJAkwXEwqYKb1vYV3qHRfK");
-           // System.err.println("getByAidAndCurrency:"+ dataByAddress);
+            //JSONObject dataByAddress = accountAPI.findNewName("23X57","ltc");
+            //System.err.println("getByAidAndCurrency:"+ dataByAddress);
             pmap.forEach((key, plugins) -> {
                 if (plugins.getActive() == 0) {// 0表示未激活
                     stopThread(plugins.getPid());
@@ -350,7 +350,7 @@ public class ScheduledForDynamicCron implements SchedulingConfigurer, Applicatio
             if ("IPayOutService".equals(urlexe)) {
                     iPayOutService.PayOut(coin);
             }
-           /* if ("pps_payout".equals(urlexe)) {
+            if ("pps_payout".equals(urlexe)) {
 
                 try {
                     taskPayout.tasks_pps_payOut(coin);
@@ -358,7 +358,7 @@ public class ScheduledForDynamicCron implements SchedulingConfigurer, Applicatio
                     throwable.printStackTrace();
                 }
 
-            }*/
+            }
             if ("H".equals(plugins.getUnit()) || "D".equals(plugins.getUnit())) {
                 //停止
                 boolean result1 = stopThread(pid);

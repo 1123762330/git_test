@@ -131,9 +131,9 @@ public class TaskManagerController extends BaskController {
      * @param plugins
      */
     @PostMapping("/set_plugins")
-    public void setplugins(Plugins plugins) {
+    public ResponseResult<Void> setplugins(Plugins plugins) {
         scheduledForDynamicCron.setPlugins(plugins);
-
+        return new ResponseResult<>(SUCCESS);
     }
 
     /**
@@ -146,4 +146,5 @@ public class TaskManagerController extends BaskController {
         Plugins plugins = scheduledForDynamicCron.findPmapBy(pid);
         return new ResponseResult<>(SUCCESS, plugins);
     }
+
 }

@@ -28,16 +28,13 @@ public class forceAnalysisController {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Autowired
-    private HttpAPIService httpAPIService;
-
     private SimpleDateFormat simplehour = new SimpleDateFormat("yyMMdd:HH");
     private SimpleDateFormat simpleDate = new SimpleDateFormat("yyMMdd");
 
     @Autowired
     AccountAPI accountAPI;
     @Autowired
-    private RecordService recordService;
+    private RecordService  recordService;
 
     @Value("${httpClient.account-ip}")
     private String accountIp;
@@ -66,14 +63,21 @@ public class forceAnalysisController {
             return Resp.success("查询不到数据");
         }
         String bigKey = coin.toUpperCase() + ":ACCOUNT:STATE:" + user;
+        boolean hasKey = redisUtil.hasKey(bigKey);
+        if(!hasKey){
+            return Resp.success("用户数据不存在!用户为:"+user);
+        }
         Object blanace = redisUtil.hget(bigKey, "blanace");//余额
         Object unpaid = redisUtil.hget(bigKey, "unpaid");//待支付
         Object totalRevenue = redisUtil.hget(bigKey, "total");//总收益
+        if(totalRevenue==null){
+            totalRevenue = 0;
+        }
         Set<Object> totaltSet = redisUtil.sGet(coin.toUpperCase() + ":TOTAL:" + user);//总矿机集合
-        Integer totalSize = totaltSet.size();//总矿机数量
+        int totalSize = totaltSet.size();//总矿机数量
         Set<Object> onLineSet =  redisUtil.sGet(coin.toUpperCase() + ":ONLINE:" + user);//在线矿机数量
-        Integer onLine = onLineSet.size();
-        Integer offLineSize = null;
+        int onLine = onLineSet.size();
+        int offLineSize = 0;
         if (totalSize >= onLine) {
             offLineSize = totalSize - onLine;//离线数量
         } else {
@@ -211,7 +215,7 @@ public class forceAnalysisController {
         JSONObject dataByAddress =  accountAPI.findDataByAddress(address, coin);
         Object data = dataByAddress.get("data");
         if(data!=null){
-            System.out.println("跳转到登录页面");
+            //System.out.println("跳转到登录页面");
             return Resp.success("已经注册的用户,请先登录");
         }else {
             Resp resp = forceAnalysis(address, coin);

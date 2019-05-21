@@ -4,6 +4,8 @@ import com.xnpool.account.entity.User;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Mapper
 @Repository
 public interface UserMaper {
@@ -94,4 +96,9 @@ public interface UserMaper {
     @Update("update t_user t SET  t.street =#{street} WHERE t.name =#{username}")
     int updateUserStreetdByName(@Param(value = "username") String username, @Param(value = "street") String street);
 
+    @Select("Select t1.userid as userid, name as username,mobile as phone,email as email,  state as state, street as street,IP as IP,t1.createtime as createtime, t2.rolename as rolename,\n" +
+            "t2.roleremark as roleremark FROM   t_user AS  t1   JOIN t_role AS t2 WHERE t1.roleid = t2.roleid")
+    List<User> getUsers();
+    @Select("Select * from t_user where userid = #{userid}")
+    User getUSerByID(int userid);
 }

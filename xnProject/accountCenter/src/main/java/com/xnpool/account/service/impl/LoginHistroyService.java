@@ -2,6 +2,7 @@ package com.xnpool.account.service.impl;
 
 import com.xnpool.account.entity.LoginHistroy;
 import com.xnpool.account.mappers.LoginHistroyMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
  * Description:
  */
 @Service
+@Slf4j
 public class LoginHistroyService {
 
     @Autowired
@@ -28,9 +30,9 @@ public class LoginHistroyService {
         int i = 0;
         i = loginHistroyMapper.insertLoginHistroy(userId,loginIp,loginPlace,loginFacility,sdf.format(date));
         if(i>0){
-            System.out.println(userId + "登陆历史插入成功");
+            log.info(userId + "登陆历史插入成功");
         }else{
-            System.out.println(userId + "登陆历史插入失败");
+            log.info(userId + "登陆历史插入失败");
         }
         return i;
     }
@@ -39,7 +41,7 @@ public class LoginHistroyService {
     public List<LoginHistroy> getLoginHsByUid(int userId){
         List<LoginHistroy> list = loginHistroyMapper.getLoginHsByUid(userId);
         if(list.isEmpty()){
-            System.out.println("查询登陆历史为空");
+            log.info("查询登陆历史为空");
         }
         return list;
     }

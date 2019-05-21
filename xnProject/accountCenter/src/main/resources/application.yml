@@ -30,7 +30,7 @@ mybatis:
 ---
 #oauth 网络接口
 oauthServer:
-  Url:  http://192.168.0.122:9999
+  Url:  http://192.168.0.155:9999
   #增加app的应用名称--验证token 需要请求头
   client-id: xnpool-app
   client-secret: xnpool-app-secret

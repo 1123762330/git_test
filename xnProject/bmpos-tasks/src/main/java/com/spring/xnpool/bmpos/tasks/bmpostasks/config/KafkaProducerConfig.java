@@ -30,7 +30,7 @@ public class KafkaProducerConfig {
 
         // set the producer properties
         Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.0.131:9092");//kafka地址
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.0.121:9092");//kafka地址
         properties.put(ProducerConfig.RETRIES_CONFIG,0);//失败后 自动提交次数
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 4096);
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);

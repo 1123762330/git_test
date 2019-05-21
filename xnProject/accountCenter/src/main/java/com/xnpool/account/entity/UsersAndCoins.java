@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 public class UsersAndCoins {
     private Integer accountId;
     private String name;
+    private String remarkName = "";
     private String coinAddress;
     private String currency;
+    private Integer id;
 }

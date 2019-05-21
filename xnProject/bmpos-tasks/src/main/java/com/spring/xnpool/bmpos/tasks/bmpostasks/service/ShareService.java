@@ -122,5 +122,11 @@ public interface ShareService {
      * @return
      */
     List<UsernameDifficulty> findOneHourMill(@Param("beforeTime") Date beforeTime, @Param("updateTime") Date updateTime);
-
+    /**
+     * 查询在线矿机
+     * @param startId
+     * @param lastId
+     * @return
+     */
+    List<String> getOnlineMill(@Param("startId") Integer startId, @Param("lastId") Integer lastId);
 }

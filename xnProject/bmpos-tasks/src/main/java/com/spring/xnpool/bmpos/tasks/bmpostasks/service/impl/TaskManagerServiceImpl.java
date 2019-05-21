@@ -25,7 +25,7 @@ public class TaskManagerServiceImpl implements ITaskManagerService {
         plugins.setClassName("IDailyService");
         plugins.setActive(1);
         plugins.setUnit("M");
-        plugins.setDuration(1);
+        plugins.setDuration(20);
         plugins.setName("日结");
         plugins.setCategory("插件");
         plugins.setCoin("ltc");
@@ -37,7 +37,7 @@ public class TaskManagerServiceImpl implements ITaskManagerService {
         plugins1.setClassName("IPayOutService");
         plugins1.setActive(1);
         plugins1.setUnit("M");
-        plugins1.setDuration(2);
+        plugins1.setDuration(30);
         plugins1.setName("支付");
         plugins1.setCategory("插件");
         plugins1.setStart(simpleDateFormat.format(new Date()));
@@ -63,7 +63,7 @@ public class TaskManagerServiceImpl implements ITaskManagerService {
         plugins3.setClassName("SummarizedData");
         plugins3.setActive(1);
         plugins3.setUnit("M");
-        plugins3.setDuration(3);
+        plugins3.setDuration(5);
         plugins3.setName("数据统计");
         plugins3.setCategory("插件");
         plugins3.setCoin("ltc");

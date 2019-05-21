@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xnpool.account.mappers.ImpowerMapper">
+
+    <!--Integer addImpower(Impower impower);-->
+    <insert id="addImpower" parameterType="com.xnpool.account.entity.Impower">
+     INSERT INTO  impower (user_id,impower_aid,impower_time,start_time,by_impower_name,authority,remark)
+     VALUES (#{userId},#{impowerAid},#{impowerTime},#{startTime},#{byImpowerName},#{authority},#{remark})
+    </insert>
+
+    <!--用户授权时间到了,将授权时间重置为0,授权状态改为1,未授权.修改授权状态-->
+    <update id="updateAuthorising" parameterType="Integer">
+      update impower set impower_time=0,is_expiry=1 where id=#{id};
+    </update>
+
+    <!--查询是否有过授权,并且是否失效-->
+    <select id="selectStatu" resultType="com.xnpool.account.entity.Impower" parameterType="com.xnpool.account.entity.Impower">
+    SELECT id,impower_time AS impowerTime,impower_aid AS impowerAid FROM impower WHERE by_impower_name=#{byImpowerName} AND user_id = #{userId}
+    </select>
+
+    <!--被授权方显示显示所有自己接受授权账户列表-->
+    <select id="selectByImpowerName" resultType="com.xnpool.account.entity.ByAuthorising">
+        SELECT acc.`name` AS accountName, u.`name` AS usersName
+        FROM sale_account AS acc JOIN t_user AS u
+	    ON acc.id IN ( SELECT impower_aid FROM impower WHERE by_impower_name = #{byImpowerName} )
+	    AND userId = u.userid
+        GROUP BY  acc.id
+    </select>
+
+    <!--授权之前判断被授权方存不存在-->
+    <select id="selectUsers" resultType="String">
+        select name FROM t_user where
+        name=#{byImpowerName}
+        OR
+        mobile=#{byImpowerName}
+    </select>
+
+    <!--查看此账户已经授权了读和写的权限的人数-->
+    <select id="selectAuthorisingCount" resultType="Integer">
+        SELECT COUNT(impower_aid) AS COUNT FROM impower WHERE impower_aid=#{pramImpowerAid} AND authority=#{authority};
+    </select>
+
+    <!--查看被授权的用户-->
+    <select id="selectByUserId"  resultType="com.xnpool.account.entity.Authorinsing">
+        SELECT
+           NAME,i.authority AS authority
+        FROM
+          t_user u JOIN impower i ON u.mobile = i.by_impower_name OR u.name = i.by_impower_name
+        WHERE
+         i.user_id = #{userId} AND is_expiry = 0 AND
+          NAME IN (SELECT by_impower_name FROM impower WHERE user_id = #{userId} AND impower_aid = #{impowerAid}) OR mobile IN (SELECT by_impower_name FROM impower WHERE user_id = #{userId} AND impower_aid = #{impowerAid})
+        GROUP BY NAME,authority
+        LIMIT 5
+    </select>
+
+    <!--查询定时时间-->
+    <select id="selectTime" resultType="com.xnpool.account.entity.Impower">
+        SELECT impower_time As impowerTime,id,impower_aid As impowerAid FROM impower WHERE is_expiry = 0
+    </select>
+
+
+    <!--Integer updateAuthoris(Integer id);-->
+    <update id="updateAuthoris" parameterType="com.xnpool.account.entity.Impower">
+        UPDATE impower SET impower_time = #{impowerTime},is_expiry = 0 WHERE id = #{id}
+    </update>
+</mapper>

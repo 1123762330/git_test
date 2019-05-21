@@ -36,9 +36,6 @@ public class BmposIndexController {
     private RedisUtil redisUtil;
 
     @Autowired
-    private HttpAPIService httpAPIService;
-
-    @Autowired
     private MachineService machineService;
 
     @Autowired
@@ -112,6 +109,10 @@ public class BmposIndexController {
     public Resp poolsStatistics(String coin) {
         Map<String, Object> resultMap = new HashMap<>();
         String bigKey = coin.toUpperCase() + ":POOL:STATE";
+        boolean hasKey = redisUtil.hasKey(bigKey);
+        if(!hasKey){
+            return Resp.success("缓存中没有数据!");
+        }
         String value = (String) redisUtil.get(bigKey);
         JSONObject jsonObject = JSONObject.fromObject(value);
         double netHashrate = jsonObject.getDouble("netHashrate");//全网算力

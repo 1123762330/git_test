@@ -39,7 +39,7 @@
     <!--List<SaleAddress> selectByAccountId(Integer accountId);-->
     <select id="selectByAccountId" resultType="com.xnpool.account.entity.SaleAddress" >
         SELECT
-          currency,coin_address AS coinAddress
+          id,currency,coin_address AS coinAddress
         FROM
            sale_address
         WHERE
@@ -49,12 +49,13 @@
             @Param("accountId") Integer accountId,
             @Param("currency") String currency);-->
     <select id="seletcByAidAndCurrency" resultType="com.xnpool.account.entity.SaleAccountVO">
-        SELECT
-           a.user_id As userId, a.name AS name, currency,coin_address AS  coinAddress,a.id AS accountId,settle_share AS settleShare
+         SELECT
+           a.user_id AS userId, a.name AS NAME, currency,coin_address AS  coinAddress,a.id AS accountId,ss.scale AS scale,rank
         FROM
-          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id
+          sale_account AS a JOIN sale_address AS ad ON a.id = ad.account_id JOIN t_sale_setting AS ss ON ad.settle_share = ss.id
         WHERE
            a.name =#{name} AND currency=#{currency}  AND a.deleted_at IS NULL AND  ad.deleted_at IS NULL
+        LIMIT 1
     </select>
     <!--Integer deleteByid(Integer id,Date time);-->
     <update id="deleteByid" >
@@ -74,5 +75,28 @@
         WHERE
            a.id =#{accountId} AND currency=#{currency}  AND a.deleted_at IS NULL AND  ad.deleted_at IS NULL
         LIMIT 1
+    </select>
+
+    <!--查看所有钱包的权限及相关信息-->
+    <select id="findSaleAddress" resultType="com.xnpool.account.entity.SaleAddressAll">
+        SELECT a.id AS id,a.account_id AS accountId,a.currency,a.coin_address AS coinAddress,a.created_at AS createdAt,
+               a.updated_at AS updatedAt,a.deleted_at AS deletedAt,a.settle_share AS settleShare,a.isAccount AS isaccount,
+               b.rank,b.scale,t.name AS accountName,u.name AS users
+        FROM sale_address AS a
+        LEFT JOIN t_sale_setting AS b  ON  a.settle_share=b.id
+        LEFT JOIN sale_account AS t ON t.id=a.account_id
+        LEFT JOIN t_user AS u ON t.user_id=u.userid
+    </select>
+
+    <!--修改钱包级别-->
+    <update id="updateWalletRank" parameterType="Integer">
+        UPDATE sale_address SET settle_share=#{rank} WHERE id=#{walletId};
+    </update>
+
+    <!--修改数据前先回显数据-->
+    <select id="selectWallet" parameterType="Integer" resultType="com.xnpool.account.entity.SaleAddressAll">
+        SELECT a.id AS id,a.account_id AS accountId,a.currency,a.coin_address AS coinAddress,a.created_at AS createdAt,
+               a.updated_at AS updatedAt,a.deleted_at AS deletedAt,a.settle_share AS settleShare,a.isAccount AS isaccount
+        FROM sale_address AS a WHERE a.id=#{walletId};
     </select>
 </mapper>

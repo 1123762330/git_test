@@ -6,7 +6,9 @@ import com.spring.xnpool.bmpos.tasks.bmpostasks.tools.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -45,4 +47,15 @@ public class ConfigController extends BaskController {
         List<Config> data = iConfigService.findAll();
         return new ResponseResult<>(SUCCESS, data);
     }
+
+    /**
+     * 返回默认配置
+     * @return
+     */
+    @PostMapping("/get_default_config")
+    public ResponseResult<List<Config>> getDefaultConfig(){
+        List<Config> defaultConfig = iConfigService.getDefaultConfig();
+        return new ResponseResult(SUCCESS,defaultConfig);
+    }
+
 }

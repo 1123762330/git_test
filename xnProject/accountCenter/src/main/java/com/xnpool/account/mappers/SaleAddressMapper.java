@@ -3,6 +3,7 @@ package com.xnpool.account.mappers;
 
 import com.xnpool.account.entity.SaleAccountVO;
 import com.xnpool.account.entity.SaleAddress;
+import com.xnpool.account.entity.SaleAddressAll;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
@@ -68,6 +69,26 @@ public interface SaleAddressMapper {
      */
     Integer deleteByid(@Param("id") Integer id, @Param("time") Date time);
 
+    /**
+     * 查询所有钱包权限
+     * @return
+     */
+    List<SaleAddressAll> findSaleAddress ();
+
+    /**
+     * 修改钱包级别
+     * @param rank 钱包级别
+     * @param walletId 钱包Id
+     * @return
+     */
+    Integer updateWalletRank (@Param("rank") Integer rank,@Param("walletId") Integer walletId);
+
+    /**
+     * 修改钱包数据前先回显
+     * @param walletId
+     * @return
+     */
+    SaleAddressAll selectWallet (Integer walletId);
 }
 
 

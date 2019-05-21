@@ -136,13 +136,6 @@ public class PayOutServiceImpl implements IPayOutService {
             }
             //todo 密码未知！
            // client.walletPassphrase("123", 60);
-            transactionId = createDebitAPRecord(aDailyData.getAccountId(), aDailyData.getCoinAddress(), aDailyData.getAmount(), aDailyData.getId());
-            if (transactionId == -1) {
-                errorService.insertToPluginsid(ITaskManagerService.PAYOUT_PLUGINS_ID,"创建DebitAPRecord数据失败!用户id:"+aDailyData.getAccountId()+",地址:" +aDailyData.getCoinAddress()+",金额:"+aDailyData.getAmount()+"日结id:"+aDailyData.getId());
-                pluginsStateService.setPluginsState(ITaskManagerService.PAYOUT_PLUGINS_ID,-1);
-                continue;
-            }
-
 
             //从RPC运行支付，现在用户已完全借记
             if (sendmanyAvailable) {
@@ -171,11 +164,13 @@ public class PayOutServiceImpl implements IPayOutService {
                 continue;
             }else {
                 //支付成功
+                transactionId = createDebitAPRecord(aDailyData.getAccountId(), aDailyData.getCoinAddress(), aDailyData.getAmount(), aDailyData.getId());
+                if (transactionId == -1) {
+                    errorService.insertToPluginsid(ITaskManagerService.PAYOUT_PLUGINS_ID,"创建DebitAPRecord数据失败!用户id:"+aDailyData.getAccountId()+",地址:" +aDailyData.getCoinAddress()+",金额:"+aDailyData.getAmount()+"日结id:"+aDailyData.getId());
+                    pluginsStateService.setPluginsState(ITaskManagerService.PAYOUT_PLUGINS_ID,-1);
+                    continue;
+                }
                 pluginsStateService.setPluginsState(ITaskManagerService.PAYOUT_PLUGINS_ID,1);
-                HashMap<String,Object> transMap = new HashMap<>();
-                transMap.put("coin",coin);
-                transMap.put("rpcTxid",rpcTxid);
-
                 JSONObject transaction = walletProxyAPI.getTransaction(coin,rpcTxid);
                 log.info("====交易结果:=====");
                 switch (transaction.getInt("data")){
@@ -184,7 +179,9 @@ public class PayOutServiceImpl implements IPayOutService {
                     case -1:
                         log.info("支付存在冲突");break;
                     default:
-                        producer.send("paysuccess",aDailyData);
+                        Map<String,Object> payMent = new HashMap<>();
+                        payMent.put(rpcTxid,transaction);
+                        producer.send("pay_ment",payMent);
                         System.out.println("支付成功");break;
 
                 }

@@ -52,7 +52,7 @@ public class User {
 
     private String qrcode;
 
-    private String street;//收货地址
+    private String street = "";//收货地址
 
     private Date createtime;
 

@@ -9,6 +9,6 @@ import java.util.Date;
 public class Base implements Serializable {
     private static final long serialVersionUID = 1990114085616615106L;
     private Date createdAt;
-    private Date updatedAt;
+    private String updatedAt;
     private Date deletedAt;
 }

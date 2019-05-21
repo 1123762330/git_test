@@ -1,5 +1,6 @@
 package com.spring.xnpool.bmpos.tasks.bmpostasks.feign;
 
+import com.spring.xnpool.bmpos.tasks.bmpostasks.tools.ResponseResult;
 import net.sf.json.JSONObject;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -21,5 +22,8 @@ public interface AccountAPI {
 
     @RequestMapping(value = "/account/findDataByAddress", method = RequestMethod.GET)
     JSONObject findDataByAddress(@RequestParam("coin")String coin, @RequestParam("address") String address);
+
+    @RequestMapping(value = "/mill/get_new_name", method = RequestMethod.GET)
+    JSONObject findNewName(@RequestParam("oldName") String oldName,@RequestParam("coin") String coin);
 
 }

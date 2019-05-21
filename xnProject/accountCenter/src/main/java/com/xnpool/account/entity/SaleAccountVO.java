@@ -11,5 +11,6 @@ public class SaleAccountVO extends Base{
     private Integer accountId;
     private String currency;
     private String coinAddress;
-    private Double settleShare;
+    private Double scale;
+    private String rank;
 }
