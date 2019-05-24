@@ -14,32 +14,33 @@ public class Configs {
     String zook;*/
 
     @Value("${spring.kafka.consumer.bootstrap-servers}")
-    private String brokerList;
+    String brokerList;
 
     @Value("${kafka.consumer.group.id}")
-    private String groupId;
+    String groupId;
 
-    @Value("#{'${kafka.consumer.topics}'.split(',')}")
-    private List<String> topic;
+    @Value("#{'${kafka.consumer.topic}'.split(',')}")
+    List<String> topic;
 
     @Value("${kafka.consumer.enable.auto.commit}")
-    private String commit;
+    String commit;
 
     @Value("${kafka.consumer.auto.commit.interval}")
-    private String interval;
+    String interval;
 
     @Value("${kafka.consumer.session.timeout}")
-    private String timeout;
+    String timeout;
 
     @Value("${kafka.consumer.auto.offset.reset}")
-    private String reset;
+    String reset;
 
     @Value("${spring.kafka.consumer.key-serializer}")
-    private String keyzer;
+    String keyzer;
 
     @Value("${spring.kafka.consumer.value-deserializer}")
-    private String valuezer;
+    String valuezer;
 
     @Value("${spring.kafka.consumer.max-poll-records}")
-    private String maxRecords;
+    String maxRecords;
+
 }

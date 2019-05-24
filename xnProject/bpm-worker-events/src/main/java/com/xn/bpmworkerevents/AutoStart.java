@@ -1,32 +1,33 @@
 package com.xn.bpmworkerevents;
 
-import com.xn.bpmworkerevents.controller.ConsumerHandler;
+
 import com.xn.bpmworkerevents.config.Configs;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.xn.bpmworkerevents.config.SpringUtils;
+import com.xn.bpmworkerevents.controller.ConsumerGroup;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-
+/**
+ * FileName:       Comsumer
+ * Author:         Administrator
+ * Date:           2019/4/22 13:17
+ * Description:
+ */
 @Component
-@Slf4j
 public class AutoStart implements CommandLineRunner {
-    @Autowired
     private Configs configs;
 
-    @Override
-    public void run(String... strings) throws Exception {
-        log.info("开始执行程序");
-        //调用存储方法
-        save();
+    public AutoStart(Configs configs) {
+        this.configs = configs;
     }
 
-    public void save() {
-        //创建的线程数
-        int workerNum = 5;
-        //创建消费者
-        ConsumerHandler consumers = new ConsumerHandler(configs);
-        consumers.execute(workerNum);
-        consumers.shutdown();
+
+    @Override
+    public void run(String... args) throws Exception {
+        //开启10个消费者线程
+        ConsumerGroup consumerGroup = new ConsumerGroup(10,configs);
+        //执行线程方法
+        consumerGroup.execute();
     }
+
 }

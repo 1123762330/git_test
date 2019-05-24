@@ -34,7 +34,8 @@ public class ConsumerHandler {
         props.put("key.deserializer", configs.getKeyzer());
         props.put("value.deserializer", configs.getValuezer());
         consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Arrays.asList(configs.getTopic()));
+        System.out.println("===="+configs.getTopic());
+        consumer.subscribe(configs.getTopic());
     }
 
     //创建线程池,执行存储逻辑
