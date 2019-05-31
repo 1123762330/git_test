@@ -31,15 +31,13 @@ public class ConsumerHandler {
         props.put("key.deserializer", configs.getKeyzer());
         props.put("value.deserializer", configs.getValuezer());
         consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Arrays.asList(configs.getTopic()));
+        consumer.subscribe(Arrays.asList("MposShareTopic"));
     }
 
     //创建线程池,执行存储逻辑
     public void execute(int workerNum) {
         executors = new ThreadPoolExecutor(workerNum, workerNum, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(1000), new ThreadPoolExecutor.CallerRunsPolicy());
-        /*long start = System.currentTimeMillis() ;
-        System.out.println("开始时间是"+start);*/
 
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(200);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.kafkaconsumer.dao.mapper.SharesMapper">
+
+  <insert id="insertShares" parameterType="java.util.List">
+    insert into shares(rem_host, username, our_result,upstream_result, reason, solution,difficulty) values
+    <foreach collection ="list" item="sharesModel" separator =",">
+      (#{sharesModel.rem_host}, #{sharesModel.username},#{sharesModel.our_result},#{sharesModel.upstream_result},
+      #{sharesModel.reason},#{sharesModel.solution},
+      #{sharesModel.difficulty})
+    </foreach >
+  </insert>
+</mapper>

@@ -27,6 +27,12 @@ public class Worker implements Runnable {
         if (kafkaMessage.isPresent()) {
             //从消息中获取Object对象
             Object object = kafkaMessage.get();
+            System.out.println(
+                    "线程名称是:"+Thread.currentThread().getName() +
+                            ",消费者分区是" + consumerRecord.partition() +
+                            ",消息起始:" + consumerRecord.offset()+
+                            ",消费的数据是"+consumerRecord.value());
+            System.out.println("======"+object);
             //将Object对象转成json数据
             JSON json = JSON.parseObject(object.toString());
             //json数据转成实体类对象
@@ -50,11 +56,11 @@ public class Worker implements Runnable {
                     messageDao.saveMessage(user_id,user_name);
                     /*long end = System.currentTimeMillis() ;
                     System.out.println("结束时间是:"+end);*/
-                    /*System.out.println(
+                    System.out.println(
                             "线程名称是:"+Thread.currentThread().getName() +
                             ",消费者分区是" + consumerRecord.partition() +
                             ",消息起始:" + consumerRecord.offset()+
-                            ",消费的数据是"+consumerRecord.value());*/
+                            ",消费的数据是"+consumerRecord.value());
                     System.out.println("存储成功!");
                 } catch (Exception e) {
                     //e.printStackTrace();

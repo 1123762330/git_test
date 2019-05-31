@@ -1,10 +1,10 @@
-package com.xn.threadconsumer.domain;
+package com.cn.kafkaconsumer.config;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
+@Data
 @Component
 public class Configs {
 
@@ -17,7 +17,7 @@ public class Configs {
     @Value("${kafka.consumer.group.id}")
     String groupId;
 
-    @Value("#{'${kafka.consumer.topic}'.split(',')}")
+    @Value("#{'${kafka.consumer.topics}'.split(',')}")
     String topic;
 
     @Value("${kafka.consumer.enable.auto.commit}")
@@ -37,6 +37,9 @@ public class Configs {
 
     @Value("${spring.kafka.consumer.value-deserializer}")
     String valuezer;
+
+    @Value("${spring.kafka.consumer.max-poll-records}")
+    String maxRecords;
 
     /*public String getZook() {
         return zook;

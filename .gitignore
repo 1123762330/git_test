@@ -12,3 +12,5 @@ xnProject/bpm-worker-events/src/test/java/com/xn/bpmworkerevents/BpmWorkerEvents
 xnProject/bmpos-tasks/.gitignore
 xnProject/bmpos-manager/bmpos-manager.iml
 xnProject/bmpos-console/bmpos-console/bmpos-console.iml
+kafkaconsumer/.gitignore
+kafkaconsumer.zip
